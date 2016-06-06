@@ -1,0 +1,34 @@
+ {{ template "header.html" .}}
+    <!-- Wrap all non-bar HTML in the .content div (this is actually what scrolls) -->
+    <header class="bar bar-nav">
+      <h1 class="title">GreenHome</h1>
+      <a class="icon icon-gear pull-right" href="security"></a>
+    </header>
+     <div class="content">
+      <div class="card">
+        <ul class="table-view">
+          <li class="table-view-cell">
+            <a class="navigate-right" href="modes" data-transition="slide-in">
+              <strong>Modes</strong>
+            </a>
+          </li>
+          <li class="table-view-cell">
+            <a class="push-right" href="https://github.com/twbs/ratchet/">
+              <strong>Ratchet on Github</strong>
+            </a>
+          </li>
+          <li class="table-view-cell">
+            <a class="push-right" href="https://groups.google.com/forum/#!forum/goratchet">
+              <strong>Ratchet Google group</strong>
+            </a>
+          </li>
+          <li class="table-view-cell">
+            <a class="push-right" href="https://twitter.com/goratchet">
+              <strong>Ratchet on Twitter</strong>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+ {{ template "footer.html" .}}
