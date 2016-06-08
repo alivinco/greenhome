@@ -6,6 +6,19 @@ var text
 var ws
 var name = "Guest" + Math.floor(Math.random() * 1000);
 
+function NewMsg(topic,type,cls,subcls,def,properties){
+    payload = {type:type,cls:cls,subcls:subcls,def:def,props:properties}
+    msg = {topic:topic,payload:JSON.stringify(payload)}
+    return JSON.stringify(msg)
+}
+
+function CmdBinarySwitch(topic,value){
+    msg = NewMsg(topic,"cmd","binary","switch",{value:value})
+    ws.send(msg)
+}
+
+
+// ratchet.js push handler which is called whenever new page is loaded by push.js
 function pushHandler(event){
     url = event.detail.state.url
 
@@ -32,18 +45,26 @@ function initChat(){
               };
 }
 
+function wsMessageHandler(msg){
+    jobj = JSON.parse(msg.data)
+
+    topic = jobj.topic
+    payload = JSON.parse(jobj.payload)
+
+    console.log(topic)
+    console.dir(payload)
+    $('[topic="/dev/zw/99/sen_temp/1/events"]').html(payload.def.value)
+    //var line =  now() + " " + jobj.cls+"."+jobj.subcls+"="+jobj.def.value + "\n";
+    //chat.innerText += line;
+}
+
 $(function() {
      // Only needed if you want to fire a callback
      window.addEventListener('push', pushHandler);
      console.dir("Connecting")
      var url = "ws://" + window.location.host + "/greenhome/ws";
      ws = new WebSocket(url);
-     ws.onmessage = function (msg) {
-                jobj = JSON.parse(msg.data)
-
-                var line =  now() + " " + jobj.cls+"."+jobj.subcls+"="+jobj.def.value + "\n";
-                chat.innerText += line;
-              };
+     ws.onmessage = wsMessageHandler
      if (window.location.href.includes("logs"))
      {
         initChat()

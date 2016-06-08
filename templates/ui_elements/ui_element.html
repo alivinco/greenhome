@@ -1,0 +1,7 @@
+{{ if eq .UiElement "binary_switch" }}
+    {{ template "el_binary_switch.html" .}}
+{{ else if eq .UiElement "moment_button" }}
+    {{ template "el_binary_switch.html" .}}
+{{ else if eq .UiElement "sensor" }}
+    {{ template "el_sensor.html" .}}
+{{ end}}

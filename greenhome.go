@@ -11,7 +11,40 @@ import (
 	//"github.com/olahol/melody"
 	"github.com/alivinco/greenhome/adapters"
 	"github.com/alivinco/greenhome/routers"
+	"gopkg.in/mgo.v2"
+	"github.com/alivinco/greenhome/store"
 )
+var session *mgo.Session
+var db *mgo.Database
+var projectStore *store.ProjectStore
+var mobileUiStore *store.MobileUiStore
+var mqa *adapters.MqttAdapter
+
+func InitDb(){
+	var err error
+	session ,err = mgo.Dial("localhost")
+	if err == nil {
+		session.SetMode(mgo.Monotonic, true)
+		db = session.DB("greenhome")
+	}
+}
+func InitStores(){
+	projectStore = store.NewProjectStore(session,db)
+	mobileUiStore = store.NewMobileUiStore(session,db)
+}
+
+func Subscribe(){
+	subs , _ := mobileUiStore.GetSubscriptions("")
+	for _ , topic := range subs {
+		mqa.Subscribe(topic,1)
+	}
+}
+func Unsubscribe(){
+	subs , _ := mobileUiStore.GetSubscriptions("")
+	for _ , topic := range subs{
+		mqa.Unsubscribe(topic)
+	}
+}
 
 func RunHttpServer(bindAddress string,jwtSecret string) {
 	decoded_secret, _ := base64.URLEncoding.DecodeString(jwtSecret)
@@ -24,7 +57,9 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
 	mobAppRoot.GET("/home",func(c *gin.Context) {
 			c.Get("UserData")
 			//user,_:=c.Get("UserData")
-        		c.HTML(http.StatusOK, "start.html",gin.H{})
+			projectId := "57582d2a6dcdd112edb1278e"
+			mobUi , _ := mobileUiStore.Get(projectId,"")
+        		c.HTML(http.StatusOK, "start.html",mobUi[0])
 		})
 	mobAppRoot.GET("/security",func(c *gin.Context) {
 			c.Get("UserData")
@@ -42,22 +77,10 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
         		c.HTML(http.StatusOK, "logs.html",gin.H{})
 		})
 
-	//r.GET("/greenhome/ws", func(c *gin.Context) {
-	//	m.HandleRequest(c.Writer, c.Request)
-	//})
-	//
-	//m.HandleMessage(func(s *melody.Session, msg []byte) {
-	//	m.Broadcast(msg)
-	//})
-	//m.HandleConnect(func(s *melody.Session) {
-	//	fmt.Println("Client connected from ",s.Request.URL)
-	//})
-	//m.HandleDisconnect(func(s *melody.Session) {
-	//	fmt.Println("Client disconnected from ",s.Request.URL)
-	//})
 	wsa := adapters.NewWsAdapter(r)
-	mqa := adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
+	mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 	mqa.Start()
+	Subscribe()
 	routers.NewMainRouter(mqa,wsa)
 	r.Run(bindAddress)
 }
@@ -77,5 +100,12 @@ func main() {
 	flag.Parse()
 	fmt.Println("addr:",bindAddress)
 	fmt.Println("jwt_secret:",jwtSecret)
+	defer func(){
+		Unsubscribe()
+		session.Close()
+	}()
+	InitDb()
+	InitStores()
 	RunHttpServer(bindAddress,jwtSecret)
+
 }

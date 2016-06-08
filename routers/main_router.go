@@ -18,13 +18,16 @@ type MainRouter struct {
 func NewMainRouter(mqttAdapter *adapters.MqttAdapter , wsAdapter *adapters.WsAdapter)(*MainRouter){
 	mr := MainRouter{mqttAdapter,wsAdapter}
 	mr.mqttAdapter.SeMessageHandler(mr.onMqttMessage)
-	mqttAdapter.Subscribe("jim1/cmd/test/grhome",1)
-
+	//mqttAdapter.Subscribe("jim1/cmd/test/grhome",1)
+	mr.wsAdapter.SetMessageHandler(mr.onWsMessage)
 	return &mr
 }
 
 func (mr *MainRouter)onMqttMessage(adapter string,topic string,iotMsg *IotMsg.IotMsg){
 	fmt.Println(iotMsg.String())
-	mr.wsAdapter.Publish(topic,iotMsg,1)
+	mr.wsAdapter.Publish("jim1"+topic,iotMsg,1)
 }
-
+func (mr *MainRouter)onWsMessage(adapter string,topic string,iotMsg *IotMsg.IotMsg){
+	fmt.Println(iotMsg.String())
+	mr.mqttAdapter.Publish(topic,iotMsg,1)
+}

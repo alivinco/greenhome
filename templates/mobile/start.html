@@ -5,30 +5,16 @@
       <a class="icon icon-gear pull-right" href="security"></a>
     </header>
      <div class="content">
-      <div class="card">
         <ul class="table-view">
-          <li class="table-view-cell">
-            <a class="navigate-right" href="modes" data-transition="slide-in">
-              <strong>Modes</strong>
-            </a>
-          </li>
-          <li class="table-view-cell">
-            <a class="push-right" href="https://github.com/twbs/ratchet/">
-              <strong>Ratchet on Github</strong>
-            </a>
-          </li>
-          <li class="table-view-cell">
-            <a class="push-right" href="https://groups.google.com/forum/#!forum/goratchet">
-              <strong>Ratchet Google group</strong>
-            </a>
-          </li>
-          <li class="table-view-cell">
-            <a class="push-right" href="https://twitter.com/goratchet">
-              <strong>Ratchet on Twitter</strong>
-            </a>
-          </li>
+          {{ range .Views }}
+            {{ if eq .Name "Home"}}
+                {{ range .Things}}
+                <li class="table-view-cell">
+                     {{ template "ui_element.html" .}}
+                </li>
+                {{ end}}
+            {{ end}}
+          {{end}}
         </ul>
-      </div>
-
     </div>
  {{ template "footer.html" .}}
