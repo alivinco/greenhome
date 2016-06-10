@@ -19,6 +19,7 @@ var db *mgo.Database
 var projectStore *store.ProjectStore
 var mobileUiStore *store.MobileUiStore
 var mqa *adapters.MqttAdapter
+var thingsCacheStore *store.ThingsCacheStore
 
 func InitDb(){
 	var err error
@@ -31,16 +32,18 @@ func InitDb(){
 func InitStores(){
 	projectStore = store.NewProjectStore(session,db)
 	mobileUiStore = store.NewMobileUiStore(session,db)
+	mobileUiStore.SetProjectStore(projectStore)
+	thingsCacheStore = store.NewThingsCacheStore()
 }
 
 func Subscribe(){
-	subs , _ := mobileUiStore.GetSubscriptions("")
+	subs , _ := mobileUiStore.GetSubscriptions("",true)
 	for _ , topic := range subs {
 		mqa.Subscribe(topic,1)
 	}
 }
 func Unsubscribe(){
-	subs , _ := mobileUiStore.GetSubscriptions("")
+	subs , _ := mobileUiStore.GetSubscriptions("",true)
 	for _ , topic := range subs{
 		mqa.Unsubscribe(topic)
 	}
@@ -58,8 +61,8 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
 			c.Get("UserData")
 			//user,_:=c.Get("UserData")
 			projectId := "57582d2a6dcdd112edb1278e"
-			mobUi , _ := mobileUiStore.Get(projectId,"")
-        		c.HTML(http.StatusOK, "start.html",mobUi[0])
+			mobUi , _ := mobileUiStore.GetMobileUi(projectId,"")
+        		c.HTML(http.StatusOK, "start.html",mobUi)
 		})
 	mobAppRoot.GET("/security",func(c *gin.Context) {
 			c.Get("UserData")
@@ -81,7 +84,7 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
 	mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 	mqa.Start()
 	Subscribe()
-	routers.NewMainRouter(mqa,wsa)
+	routers.NewMainRouter(mqa,wsa,thingsCacheStore)
 	r.Run(bindAddress)
 }
 

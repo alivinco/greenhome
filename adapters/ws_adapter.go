@@ -7,6 +7,8 @@ import (
 	"github.com/alivinco/iotmsglibgo"
 	"encoding/json"
 	"github.com/golang/glog"
+	"strings"
+	"github.com/alivinco/greenhome/model"
 )
 
 type WsMessage struct {
@@ -29,6 +31,7 @@ func NewWsAdapter(ginE *gin.Engine)(*WsAdapter){
 	})
 	m.HandleMessage(wsa.OnMessage)
 	m.HandleConnect(func(s *melody.Session) {
+
 		fmt.Println("Client connected from ",s.Request.URL)
 	})
 	m.HandleDisconnect(func(s *melody.Session) {
@@ -45,20 +48,23 @@ func (wsa *WsAdapter)OnMessage(s *melody.Session, msg []byte){
 	//wsa.mel.Broadcast(msg)
 	wsMsg := WsMessage{}
 	err := json.Unmarshal(msg,&wsMsg)
+	wsMsg.Topic = strings.Replace(wsMsg.Topic," ","",-1)
 	fmt.Println(wsMsg)
-	fmt.Println("New message from topic = ",wsMsg.Topic)
+	fmt.Println("New WS message from topic = ",wsMsg.Topic)
 	fmt.Println(wsMsg.Payload)
-	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(wsMsg.Topic,[]byte(wsMsg.Payload),nil)
+	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(wsMsg.Topic,[]byte(wsMsg.Payload),map[string]string{"override_payload_type":"jim1"})
+	domain := "livincovi"
+	ctx := model.Context{Domain:domain}
 	if err == nil {
-		wsa.msgHandler("ws",wsMsg.Topic,iotMsg)
+		wsa.msgHandler("ws",wsMsg.Topic,iotMsg,&ctx)
 	} else {
 		glog.Error(err)
 
 	}
 }
-
+// Publish messages over websocket
 func (wsa *WsAdapter)Publish(topic string,iotMsg *iotmsglibgo.IotMsg , qos byte)(error){
-	msg , err := iotmsglibgo.ConvertIotMsgToBytes(topic,iotMsg,nil)
+	msg , err := iotmsglibgo.ConvertIotMsgToBytes(topic,iotMsg,map[string]string{"override_payload_type":"jim1"})
 	wsMsg := WsMessage{Topic:topic,Payload:string(msg)}
 	if err == nil{
 		msg , _ := json.Marshal(wsMsg)

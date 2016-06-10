@@ -31,13 +31,21 @@ func TestMobileUiStore_Upsert(t *testing.T) {
 				}, model.Thing{
 					Name:                "switch12",
 					Type:                "bianry.switch",
-					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
-					ControlElementTopic: "jim1/cmd/ta/zw/3/bin_switch/1",
+					DisplayElementTopic: "/dev/zw/2/bin_switch/1/events",
+					ControlElementTopic: "/dev/zw/2/bin_switch/1/commands",
 					UiElement:           "binary_switch",
 				}, model.Thing{
 					Name:                "Temp",
 					Type:                "sensor.temperature",
 					DisplayElementTopic: "/dev/zw/99/sen_temp/1/events",
+					ControlElementTopic: "",
+					UiElement:           "sensor",
+					Value:               "12.3",
+					Unit:                "C",
+				}, model.Thing{
+					Name:                "Temp Living",
+					Type:                "sensor.temperature",
+					DisplayElementTopic: "/dev/zw/99/sen_temp/2/events",
 					ControlElementTopic: "",
 					UiElement:           "sensor",
 					Value:               "12.3",
@@ -56,7 +64,7 @@ func TestMobileUiStore_Upsert(t *testing.T) {
 
 func TestMobileUiStore_GetSubscriptions(t *testing.T) {
 	prStore := NewMobileUiStore(session, db)
-	r , err :=prStore.GetSubscriptions("")
+	r , err :=prStore.GetSubscriptions("",true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,9 +72,9 @@ func TestMobileUiStore_GetSubscriptions(t *testing.T) {
 }
 func TestMobileUiStore_Get(t *testing.T) {
 	prStore := NewMobileUiStore(session, db)
-	pr, err := prStore.Get("57582d2a6dcdd112edb1278e", "")
+	pr, err := prStore.GetMobileUi("57582d2a6dcdd112edb1278e", "")
 	if err == nil {
-		t.Log(pr[0].Views[0].Name)
+		t.Log(pr.Views[0].Name)
 	} else {
 		t.Error(err)
 	}

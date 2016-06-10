@@ -15,6 +15,7 @@ type Thing struct {
 	Value string  `json:"value"`
 	Unit string  `json:"unit"`
 	UpdatedAt time.Time `json:"updated_at"`
+	PropFieldForUi string `json:"prop_field_ui"`
 
 }
 

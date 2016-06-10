@@ -5,18 +5,24 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/alivinco/greenhome/model"
 	"fmt"
+	"github.com/alivinco/greenhome/adapters"
 )
 
 type MobileUiStore struct {
 	session *mgo.Session
 	db *mgo.Database
 	mobileUiC *mgo.Collection
+	projectStore *ProjectStore
 }
 
 func NewMobileUiStore(session *mgo.Session,db *mgo.Database)(*MobileUiStore){
 	imst := MobileUiStore{session:session,db:db}
 	imst.mobileUiC = db.C("mobile_ui")
 	return &imst
+}
+
+func (ms *MobileUiStore) SetProjectStore(projectStore *ProjectStore){
+	ms.projectStore = projectStore
 }
 
 func (ps *MobileUiStore) Upsert(mobileUi *model.MobileUi) (string,error){
@@ -41,7 +47,12 @@ func (ms *MobileUiStore) Delete(ID string) error{
 	return ms.mobileUiC.RemoveId(bson.ObjectIdHex(ID))
 }
 
-func (ms *MobileUiStore) GetSubscriptions(projectId string)([]string ,error){
+func (ms *MobileUiStore) UpdateThingValue(topic string , value string){
+
+
+}
+
+func (ms *MobileUiStore) GetSubscriptions(projectId string , global bool)([]string ,error){
 	var results []model.MobileUi
 	//projection := bson.M{"views.things.displayelementtopic":1}
 	err := ms.mobileUiC.Find(nil).All(&results)
@@ -51,9 +62,15 @@ func (ms *MobileUiStore) GetSubscriptions(projectId string)([]string ,error){
 	subs := []string{}
 
 	for _ ,mobUi := range results{
+		project , _ := ms.projectStore.GetById(mobUi.Project.Hex())
 		for _,view := range mobUi.Views{
 			for _,thing := range view.Things{
-				subs = append(subs,thing.DisplayElementTopic)
+				if global{
+					subs = append(subs,adapters.AddDomainToTopic(project.Domain,thing.DisplayElementTopic))
+				}else {
+					subs = append(subs,thing.DisplayElementTopic)
+				}
+
 			}
 		}
 	}
@@ -61,16 +78,28 @@ func (ms *MobileUiStore) GetSubscriptions(projectId string)([]string ,error){
 }
 
 // GetList returns list of all apps
-func (ms *MobileUiStore) Get(id string , project_id string) ([]model.MobileUi,error){
-	var results []model.MobileUi
+func (ms *MobileUiStore) GetMobileUi(id string , projectId string) (*model.MobileUi,error){
+	var results model.MobileUi
 	selector := bson.M{}
 	if len(id)>0 {
 		selector = bson.M{"_id":bson.ObjectIdHex(id)}
-	}else if project_id != "" {
-		selector = bson.M{"project":bson.ObjectIdHex(project_id)}
+	}else if projectId != "" {
+		selector = bson.M{"project":bson.ObjectIdHex(projectId)}
 	}
-	err := ms.mobileUiC.Find(selector).All(&results)
+	err := ms.mobileUiC.Find(selector).One(&results)
 	fmt.Println("Results All: ", results)
-	return results,err
+	return &results,err
 }
+
+//func ExtendMobileUiWithValue(domain string ,cache *ThingsCacheStore , mobUi *model.MobileUi ){
+//	for _,view := range mobUi.Views{
+//			for _,thing := range view.Things{
+//				value  := cache.Get(domain ,thing.DisplayElementTopic)
+//				if value {
+//					thing.Value = value
+//				}
+//
+//			}
+//		}
+//}
 

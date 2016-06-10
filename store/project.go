@@ -54,4 +54,16 @@ func (ms *ProjectStore) Get(filter *model.Project) ([]model.Project,error){
 	fmt.Println("Results All: ", results)
 	return results,err
 }
+// GetList returns list of all apps
+func (ms *ProjectStore) GetById(id string) (*model.Project,error){
+	result := model.Project{}
+	err := ms.projectC.FindId(bson.ObjectIdHex(id)).One(&result)
+	fmt.Println("Results All: ", result)
+	if err == nil{
+		return &result,nil
+	}else {
+		return nil,err
+	}
+
+}
 

@@ -53,7 +53,7 @@ function wsMessageHandler(msg){
 
     console.log(topic)
     console.dir(payload)
-    $('[topic="/dev/zw/99/sen_temp/1/events"]').html(payload.def.value)
+    $('[topic="'+topic+'"]').html(payload.def.value)
     //var line =  now() + " " + jobj.cls+"."+jobj.subcls+"="+jobj.def.value + "\n";
     //chat.innerText += line;
 }

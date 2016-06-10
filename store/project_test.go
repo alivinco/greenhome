@@ -30,6 +30,16 @@ func  TestProjectStore_Get(t *testing.T) {
 	}else{
 		t.Error(err)
 	}
+}
+
+func  TestProjectStore_GetById(t *testing.T) {
+	prStore := NewProjectStore(session,db)
+	pr ,err := prStore.GetById("57573834554efc2c77b59f97")
+	if err == nil{
+		t.Log(pr.Name)
+	}else{
+		t.Error(err)
+	}
 
 }
 

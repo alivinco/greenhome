@@ -4,6 +4,9 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/golang/glog"
 	"github.com/alivinco/iotmsglibgo"
+	"strings"
+	"github.com/alivinco/greenhome/model"
+	"fmt"
 )
 
 type MqttAdapter struct {
@@ -11,7 +14,7 @@ type MqttAdapter struct {
 	msgHandler MessageHandler
 }
 
-type MessageHandler func (adapter string,topic string,iotMsg *iotmsglibgo.IotMsg)
+type MessageHandler func (adapter string,topic string,iotMsg *iotmsglibgo.IotMsg , ctx *model.Context)
 
 //serverUri="tcp://localhost:1883"
 func NewMqttAdapter(serverUri string ,clientId string)(*MqttAdapter) {
@@ -51,30 +54,35 @@ func (mh *MqttAdapter)Subscribe(topic string,qos byte)(error){
 }
 
 func (mh *MqttAdapter)Unsubscribe(topic string)(error){
-	//unsubscribe from /go-mqtt/sample
-	  if token := mh.client.Unsubscribe("go-mqtt/sample"); token.Wait() && token.Error() != nil {
+	  if token := mh.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
 	    return token.Error()
 	  }
 	  return nil
 }
 
+
+
 //define a function for the default message handler
 func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {
 	glog.Info("TOPIC: %s\n", msg.Topic())
 	glog.Info("MSG: %s\n", msg.Payload())
-	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(msg.Topic(),msg.Payload(),nil)
-
+	fmt.Println("New msg from topic:",msg.Topic())
+	domain , topic := DetachDomainFromTopic(msg.Topic())
+	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(topic,msg.Payload(),nil)
+	ctx := model.Context{Domain:domain}
 	if err == nil {
-		mh.msgHandler("mqtt",msg.Topic(),iotMsg)
+		mh.msgHandler("mqtt",topic,iotMsg , &ctx)
 	} else {
 		glog.Error(err)
 
 	}
 }
 
-func (mh *MqttAdapter)Publish(topic string,iotMsg *iotmsglibgo.IotMsg , qos byte)(error){
+func (mh *MqttAdapter)Publish(topic string,iotMsg *iotmsglibgo.IotMsg , qos byte,ctx *model.Context)(error){
+	topic = AddDomainToTopic(ctx.Domain,topic)
 	bytm , err := iotmsglibgo.ConvertIotMsgToBytes(topic,iotMsg,nil)
 	if err == nil {
+		fmt.Println("Publishing msg to topic:",topic)
 		mh.client.Publish(topic,qos,false,bytm)
 		return nil
 	}else{
@@ -83,3 +91,24 @@ func (mh *MqttAdapter)Publish(topic string,iotMsg *iotmsglibgo.IotMsg , qos byte
 
 }
 
+func AddDomainToTopic(domain string , topic string )string {
+	// Check if topic is already prefixed with  "/" if yes then concat without adding "/"
+	// 47 is code of "/"
+	if topic[0] == 47 {
+		return domain+topic
+	}
+	return domain+"/"+topic
+}
+func DetachDomainFromTopic(topic string ) (string , string) {
+	spt := strings.Split(topic , "/")
+	// spt[0] - domain
+	var top string
+	if strings.Contains(spt[1],"jim"){
+		top = strings.Replace(topic,spt[0]+"/","",1)
+	}else{
+		top = strings.Replace(topic,spt[0],"",1)
+	}
+	// returns domain , topic
+	return spt[0] , top
+
+}
