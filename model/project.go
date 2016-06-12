@@ -12,7 +12,7 @@ type Thing struct {
 	UiElement string `json:"ui_element"`
 	MaxValue float32  `json:"max_value"`
 	MinValue float32  `json:"min_value"`
-	Value string  `json:"value"`
+	Value interface{}  `json:"value"`
 	Unit string  `json:"unit"`
 	UpdatedAt time.Time `json:"updated_at"`
 	PropFieldForUi string `json:"prop_field_ui"`

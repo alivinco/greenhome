@@ -62,7 +62,7 @@ $(function() {
      // Only needed if you want to fire a callback
      window.addEventListener('push', pushHandler);
      console.dir("Connecting")
-     var url = "ws://" + window.location.host + "/greenhome/ws";
+     var url = "ws://" + window.location.host + "/greenhome/ws?domain="+domain;
      ws = new WebSocket(url);
      ws.onmessage = wsMessageHandler
      if (window.location.href.includes("logs"))

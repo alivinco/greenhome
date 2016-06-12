@@ -91,15 +91,20 @@ func (ms *MobileUiStore) GetMobileUi(id string , projectId string) (*model.Mobil
 	return &results,err
 }
 
-//func ExtendMobileUiWithValue(domain string ,cache *ThingsCacheStore , mobUi *model.MobileUi ){
-//	for _,view := range mobUi.Views{
-//			for _,thing := range view.Things{
-//				value  := cache.Get(domain ,thing.DisplayElementTopic)
-//				if value {
-//					thing.Value = value
-//				}
-//
-//			}
-//		}
-//}
+func ExtendMobileUiWithValue(cache *ThingsCacheStore , mobUi *model.MobileUi , ctx *model.Context ){
+	fmt.Println("Extending mobUi for domain",ctx.Domain)
+	for view_i,view := range mobUi.Views{
+			for thing_i,thing := range view.Things{
+				value  := cache.Get(thing.DisplayElementTopic,ctx)
+				if value != nil {
+					mobUi.Views[view_i].Things[thing_i].Value = value.Default.Value
+					fmt.Println("Value from cache=",thing.Value)
+
+				}else{
+					fmt.Println("No entry in cache")
+				}
+
+			}
+		}
+}
 

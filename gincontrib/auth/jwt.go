@@ -1,4 +1,4 @@
-package jwt
+package auth
 
 import (
 	jwt_lib "github.com/dgrijalva/jwt-go"

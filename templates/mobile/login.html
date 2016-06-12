@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+<script src="https://cdn.auth0.com/js/lock-9.1.min.js"></script>
+<script type="text/javascript">
+
+  var lock = new Auth0Lock('njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti', 'zmarlin.eu.auth0.com');
+
+
+  function signin() {
+    lock.show({
+        callbackURL: 'http://localhost:5010/greenhome/login'
+      , responseType: 'code'
+      , authParams: {
+        scope: 'openid email'  // Learn about scopes: https://auth0.com/docs/scopes
+      }
+    });
+  }
+  window.onload=window.signin;
+</script>
+</head>
+<body>
+
+</body>
+</html>

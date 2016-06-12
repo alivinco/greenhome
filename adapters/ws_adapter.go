@@ -18,16 +18,24 @@ type WsMessage struct {
 
 type WsAdapter struct {
 	mel *melody.Melody
-	ginE *gin.Engine
+	ginE *gin.RouterGroup
 	msgHandler MessageHandler
 }
 
-func NewWsAdapter(ginE *gin.Engine)(*WsAdapter){
+func NewWsAdapter(ginE *gin.RouterGroup )(*WsAdapter){
 	m := melody.New()
 	wsa := WsAdapter{mel:m,ginE:ginE}
 
-	ginE.GET("/greenhome/ws", func(c *gin.Context) {
-		m.HandleRequest(c.Writer, c.Request)
+	ginE.GET("", func(c *gin.Context) {
+		reqDomain := c.Query("domain")
+		authRequest ,exists := c.Get("AuthRequest")
+		if exists{
+			if authRequest.(model.AuthRequest).DomainId == reqDomain{
+				m.HandleRequest(c.Writer, c.Request)
+				return
+			}
+		}
+		fmt.Print("Request can't be authenticated")
 	})
 	m.HandleMessage(wsa.OnMessage)
 	m.HandleConnect(func(s *melody.Session) {
@@ -49,11 +57,10 @@ func (wsa *WsAdapter)OnMessage(s *melody.Session, msg []byte){
 	wsMsg := WsMessage{}
 	err := json.Unmarshal(msg,&wsMsg)
 	wsMsg.Topic = strings.Replace(wsMsg.Topic," ","",-1)
-	fmt.Println(wsMsg)
-	fmt.Println("New WS message from topic = ",wsMsg.Topic)
+	domain := s.Request.URL.Query().Get("domain")
+	fmt.Println("New WS message from topic = %v for domain =",wsMsg.Topic,domain)
 	fmt.Println(wsMsg.Payload)
 	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(wsMsg.Topic,[]byte(wsMsg.Payload),map[string]string{"override_payload_type":"jim1"})
-	domain := "livincovi"
 	ctx := model.Context{Domain:domain}
 	if err == nil {
 		wsa.msgHandler("ws",wsMsg.Topic,iotMsg,&ctx)

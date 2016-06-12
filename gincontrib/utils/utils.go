@@ -1,7 +1,7 @@
 package utils
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/alivinco/blackflowhub/model"
+	"github.com/alivinco/greenhome/model"
 )
 
 func GetAuthRequest(c *gin.Context) ( *model.AuthRequest){
