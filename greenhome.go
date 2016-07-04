@@ -3,11 +3,8 @@ package main
 import (
 	"os"
 	"flag"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	//"encoding/base64"
 	"net/http"
-	//"github.com/olahol/melody"
 	"github.com/alivinco/greenhome/adapters"
 	"github.com/alivinco/greenhome/routers"
 	"gopkg.in/mgo.v2"
@@ -18,11 +15,11 @@ import (
 	"github.com/gorilla/securecookie"
 	"io/ioutil"
 	log "github.com/Sirupsen/logrus"
+	"github.com/alivinco/greenhome/controller"
 )
 var session *mgo.Session
 var db *mgo.Database
 var projectStore *store.ProjectStore
-var mobileUiStore *store.MobileUiStore
 var mqa *adapters.MqttAdapter
 var wsa *adapters.WsAdapter
 var thingsCacheStore *store.ThingsCacheStore
@@ -41,8 +38,6 @@ func InitDb(){
 }
 func InitStores(){
 	projectStore = store.NewProjectStore(session,db)
-	mobileUiStore = store.NewMobileUiStore(session,db)
-	mobileUiStore.SetProjectStore(projectStore)
 	thingsCacheStore = store.NewThingsCacheStore()
 	secretFileName = "./sessionsecret.db"
 	var err error
@@ -75,13 +70,13 @@ func InitAdaptersAndMainRouter(){
 }
 
 func SubscribeMqttTopics(){
-	subs , _ := mobileUiStore.GetSubscriptions("",true)
+	subs , _ := projectStore.GetSubscriptions("",true)
 	for _ , topic := range subs {
 		mqa.Subscribe(topic,1)
 	}
 }
 func UnsubscribeMqttTopics(){
-	subs , _ := mobileUiStore.GetSubscriptions("",true)
+	subs , _ := projectStore.GetSubscriptions("",true)
 	for _ , topic := range subs{
 		mqa.Unsubscribe(topic)
 	}
@@ -107,8 +102,8 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	mobAppRoot.GET("/home",func(c *gin.Context) {
 			c.Get("UserData")
 			//user,_:=c.Get("UserData")
-			projectId := "57582d2a6dcdd112edb1278e"
-			mobUi , _ := mobileUiStore.GetMobileUi(projectId,"")
+			projectId := "57573834554efc2c77b59f97"
+			mobUi , _ := projectStore.GetById(projectId)
 			session , _ := sessionStore.Get(c.Request,"gh_user")
 			domain := session.Values["domain_id"].(string)
 			ctx := model.Context{domain}
@@ -130,6 +125,17 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 			//user,_:=c.Get("UserData")
         		c.HTML(http.StatusOK, "logs.html",gin.H{})
 		})
+	// ADMIN UI
+	adminAppRoot := r.Group("/greenhome/ui/adm")
+	adminAppRoot.GET("/index",func(c *gin.Context){
+		c.HTML(http.StatusOK, "index.html",gin.H{})
+	})
+	// REST API
+	projectController := controller.ProjectRestController{projectStore}
+	apiAppRoot := r.Group("/greenhome/api")
+	apiAppRoot.Use(auth.AuthMiddleware(sessionStore))
+	apiAppRoot.GET("/project/:project_id",projectController.GetProject)
+
 	wsGroup = r.Group("/greenhome/ws")
 	wsGroup.Use(auth.AuthMiddleware(sessionStore))
 	return r
@@ -150,8 +156,8 @@ func main() {
 	}
 
 	flag.Parse()
-	fmt.Println("addr:",bindAddress)
-	fmt.Println("jwt_secret:",jwtSecret)
+	log.Info("addr:",bindAddress)
+	log.Info("jwt_secret:",jwtSecret)
 	defer func(){
 		UnsubscribeMqttTopics()
 		session.Close()

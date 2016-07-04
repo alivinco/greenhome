@@ -29,11 +29,11 @@ type View struct {
 	Things []Thing `json:"thing"`
 }
 
-type MobileUi struct {
-	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Project bson.ObjectId `json:"project_id"`
-	Views []View `json:"view"`
-}
+//type MobileUi struct {
+//	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
+//	Project bson.ObjectId `json:"project_id"`
+//	Views []View `json:"view"`
+//}
 
 type Project struct {
 	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
@@ -41,6 +41,7 @@ type Project struct {
 	Domain string `json:"domain"`
 	Comments string `json:"comments"`
 	GeoLocation GeoLocation `json:"geo_location"`
+	Views []View `json:"view"`
 }
 
 type GeoLocation struct {

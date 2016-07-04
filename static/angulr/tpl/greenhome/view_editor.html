@@ -1,0 +1,152 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">Project editor</h1>
+</div>
+<div class="wrapper-md">
+  <h4>Views</h4>
+  <table class="table table-bordered table-hover table-condensed bg-white-only">
+    <tr style="font-weight: bold">
+      <td style="width:20%">Name</td>
+      <td style="width:20%">Label</td>
+      <td style="width:15%">Room</td>
+      <td style="width:10%">Floor</td>
+      <td style="width:10%">Zone</td>
+      <td style="width:15%">Ui group</td>
+      <td style="width:10%">Edit</td>
+    </tr>
+    <tr ng-repeat="view in project.view" ng-click="loadView(view)">
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="view.name" e-name="name" e-form="rowform" onbeforesave="checkName($data, user.id)" e-required>
+          {{ view.name  }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable status (select-local) -->
+        <span editable-text="view.label" e-name="label" e-form="rowform">
+           {{ view.label  }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable group (select-remote) -->
+        <span editable-text="view.room" e-name="room"  e-form="rowform" >
+           {{ view.room  }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable group (select-remote) -->
+        <span editable-text="view.floor" e-name="floor"  e-form="rowform" >
+           {{ view.floor }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable group (select-remote) -->
+        <span editable-text="view.zone_name" e-name="zone_name"  e-form="rowform" >
+           {{ view.zone_name  }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable group (select-remote) -->
+        <span editable-text="view.ui_group" e-name="ui_group"  e-form="rowform" >
+           {{ view.ui_group  }}
+        </span>
+      </td>
+      <td style="white-space: nowrap">
+        <!-- form -->
+        <form editable-form name="rowform" onbeforesave="saveUser($data, user.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+          <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-sm btn-info">
+            save
+          </button>
+          <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-sm btn-default">
+            cancel
+          </button>
+        </form>
+        <div class="buttons" ng-show="!rowform.$visible">
+          <button class="btn btn-sm btn-info" ng-click="rowform.$show()">edit</button>
+          <button class="btn btn-sm btn-danger" ng-click="removeUser($index)">del</button>
+        </div>  
+      </td>
+    </tr>
+  </table>
+
+  <button class="btn btn-default m-b-lg" ng-click="addUser()">Add row</button>
+
+</div>
+
+<div class="wrapper-md">
+  <h4>Things in the view</h4>
+  <table class="table table-bordered table-hover table-condensed bg-white-only">
+    <tr style="font-weight: bold">
+      <td style="width:10%">Name</td>
+      <td style="width:10%">Type</td>
+      <td style="width:10%">Ui element</td>
+      <td style="width:25%">Control topic</td>
+      <td style="width:25%">Display topic</td>
+      <td style="width:5%">Min val</td>
+      <td style="width:5%">Max val</td>
+      <td style="width:10%">Edit</td>
+    </tr>
+    <tr ng-repeat="thing in things">
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.name" e-name="name" e-form="rowform"  e-required>
+          {{ thing.name || 'empty' }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.type" e-name="type" e-form="rowform"  e-required>
+          {{ thing.type }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.ui_element" e-name="ui_element" e-form="rowform"  e-required>
+          {{ thing.ui_element }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.control_topic" e-name="control_topic" e-form="rowform"  e-required>
+          {{ thing.control_topic }}
+        </span>
+      </td>
+      <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.display_topic" e-name="display_topic" e-form="rowform"  e-required>
+          {{ thing.display_topic }}
+        </span>
+      </td>
+       <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.min_value" e-name="min_value" e-form="rowform"  e-required>
+          {{ thing.min_value }}
+        </span>
+      </td>
+       <td class="v-middle">
+        <!-- editable username (text with validation) -->
+        <span editable-text="thing.min_value" e-name="min_value" e-form="rowform"  e-required>
+          {{ thing.max_value }}
+        </span>
+      </td>
+
+      <td style="white-space: nowrap">
+        <!-- form -->
+        <form editable-form name="rowform" onbeforesave="saveUser($data, user.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+          <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-sm btn-info">
+            save
+          </button>
+          <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-sm btn-default">
+            cancel
+          </button>
+        </form>
+        <div class="buttons" ng-show="!rowform.$visible">
+          <button class="btn btn-sm btn-info" ng-click="rowform.$show()">edit</button>
+          <button class="btn btn-sm btn-danger" ng-click="removeUser($index)">del</button>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <button class="btn btn-default m-b-lg" ng-click="showStruct()">Add row</button>
+
+</div>

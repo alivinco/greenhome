@@ -5,6 +5,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/alivinco/greenhome/model"
 	"fmt"
+	"github.com/alivinco/greenhome/adapters"
+	log "github.com/Sirupsen/logrus"
 )
 
 type ProjectStore struct {
@@ -67,3 +69,43 @@ func (ms *ProjectStore) GetById(id string) (*model.Project,error){
 
 }
 
+func (ms *ProjectStore) GetSubscriptions(projectId string , global bool)([]string ,error){
+	var results []model.Project
+	//projection := bson.M{"views.things.displayelementtopic":1}
+	err := ms.projectC.Find(nil).All(&results)
+	if err != nil {
+		return nil,err
+	}
+	subs := []string{}
+
+	for _ ,project := range results{
+		for _,view := range project.Views{
+			for _,thing := range view.Things{
+				if global{
+					subs = append(subs,adapters.AddDomainToTopic(project.Domain,thing.DisplayElementTopic))
+				}else {
+					subs = append(subs,thing.DisplayElementTopic)
+				}
+
+			}
+		}
+	}
+	return subs, nil
+}
+
+func ExtendMobileUiWithValue(cache *ThingsCacheStore , mobUi *model.Project , ctx *model.Context ){
+	log.Debug("Extending mobUi for domain =",ctx.Domain)
+	for view_i,view := range mobUi.Views{
+			for thing_i,thing := range view.Things{
+				value  := cache.Get(thing.DisplayElementTopic,ctx)
+				if value != nil {
+					mobUi.Views[view_i].Things[thing_i].Value = value.Default.Value
+					log.Debug("Value from cache=",thing.Value)
+
+				}else{
+					log.Debug("No entry in cache")
+				}
+
+			}
+		}
+}
