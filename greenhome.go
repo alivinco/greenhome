@@ -17,16 +17,19 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/securecookie"
 	"io/ioutil"
+	log "github.com/Sirupsen/logrus"
 )
 var session *mgo.Session
 var db *mgo.Database
 var projectStore *store.ProjectStore
 var mobileUiStore *store.MobileUiStore
 var mqa *adapters.MqttAdapter
+var wsa *adapters.WsAdapter
 var thingsCacheStore *store.ThingsCacheStore
 var secretFileName string
 var sessionStore *sessions.CookieStore
 var configs *model.AppConfigs
+var wsGroup *gin.RouterGroup
 
 func InitDb(){
 	var err error
@@ -51,23 +54,40 @@ func InitStores(){
 	securecookie.GenerateRandomKey(24)
 	//sessionStore = sessions.NewFilesystemStore("./",sessionSecret)
 	sessionStore = sessions.NewCookieStore(sessionSecret)
+}
+
+func InitAdaptersAndMainRouter(){
+	if wsGroup != nil{
+		wsa = adapters.NewWsAdapter(wsGroup)
+		mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
+		err := mqa.Start()
+		if err !=nil {
+			log.Fatal("Can't connect to mqtt broker. ",err)
+
+			panic(err)
+		}
+		SubscribeMqttTopics()
+		routers.NewMainRouter(mqa,wsa,thingsCacheStore)
+	}else{
+		log.Fatal("Ws Group is not initialized. Initialize it first.")
+	}
 
 }
 
-func Subscribe(){
+func SubscribeMqttTopics(){
 	subs , _ := mobileUiStore.GetSubscriptions("",true)
 	for _ , topic := range subs {
 		mqa.Subscribe(topic,1)
 	}
 }
-func Unsubscribe(){
+func UnsubscribeMqttTopics(){
 	subs , _ := mobileUiStore.GetSubscriptions("",true)
 	for _ , topic := range subs{
 		mqa.Unsubscribe(topic)
 	}
 }
 
-func RunHttpServer(bindAddress string,jwtSecret string) {
+func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	//decoded_secret, _ := base64.URLEncoding.DecodeString(jwtSecret)
 	r := gin.Default()
 	//m := melody.New()
@@ -78,8 +98,8 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
 
 		})
 	r.GET("/greenhome/logout",func(c *gin.Context) {
-			auth.Logout(sessionStore ,c)
-			c.Redirect(303,"http://localhost:5010/greenhome/ui/m/home",)
+			auth.Logout(sessionStore ,c,configs)
+			c.Redirect(303, configs.AppRootUrl+"/greenhome/ui/m/home",)
 		})
 	mobAppRoot := r.Group("/greenhome/ui/m")
 	//mobAppRoot.Use(auth.Auth(string(decoded_secret)))
@@ -110,17 +130,14 @@ func RunHttpServer(bindAddress string,jwtSecret string) {
 			//user,_:=c.Get("UserData")
         		c.HTML(http.StatusOK, "logs.html",gin.H{})
 		})
-	wsGroup := r.Group("/greenhome/ws")
+	wsGroup = r.Group("/greenhome/ws")
 	wsGroup.Use(auth.AuthMiddleware(sessionStore))
-	wsa := adapters.NewWsAdapter(wsGroup)
-	mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
-	mqa.Start()
-	Subscribe()
-	routers.NewMainRouter(mqa,wsa,thingsCacheStore)
-	r.Run(bindAddress)
+	return r
 }
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{FullTimestamp:true,ForceColors:true})
+	log.SetLevel(log.DebugLevel)
 	bindAddress := ":6000"
 	jwtSecret := ""
     // Load configs from env variable or from command line .
@@ -136,12 +153,17 @@ func main() {
 	fmt.Println("addr:",bindAddress)
 	fmt.Println("jwt_secret:",jwtSecret)
 	defer func(){
-		Unsubscribe()
+		UnsubscribeMqttTopics()
 		session.Close()
 	}()
 	configs = &model.AppConfigs{}
+	configs.AuthClientId = "njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti"
+	configs.AuthClientSecret = "T2kdCk2kTrbprreq2Dlc-qm5klDTjd5UAzHASWFPlehO4yAwoxfilnUgLoGMmR1p"
+	configs.AppRootUrl = "http://192.168.80.237:5010"
 	InitDb()
 	InitStores()
-	RunHttpServer(bindAddress,jwtSecret)
+	r := InitHttpServer(bindAddress,jwtSecret)
+	InitAdaptersAndMainRouter()
+	r.Run(bindAddress)
 
 }

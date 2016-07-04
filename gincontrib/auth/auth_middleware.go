@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"golang.org/x/oauth2"
+	log "github.com/Sirupsen/logrus"
 )
 
 
@@ -46,10 +47,12 @@ func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *m
 
 	domain := "zmarlin.eu.auth0.com"
 
+	redirectUrl := config.AppRootUrl+"/greenhome/ui/m/home"
+	log.Debug("Redirect URL : ",redirectUrl)
 	conf := &oauth2.Config{
-		ClientID:     "njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti",
-		ClientSecret: "",
-		RedirectURL:  "http://localhost:5010/greenhome/m/home",
+		ClientID:     config.AuthClientId,
+		ClientSecret: config.AuthClientSecret,
+		RedirectURL:  redirectUrl,
 		Scopes:       []string{"openid", "name", "email", "nickname"},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://" + domain + "/authorize",
@@ -64,6 +67,7 @@ func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *m
 		// Exchanging the code for a token
 		token, err := conf.Exchange(oauth2.NoContext, code)
 		if err != nil {
+			log.Error("Can't exchange the code for a token")
 			c.AbortWithError(http.StatusInternalServerError,err)
 			return
 		}
@@ -100,20 +104,20 @@ func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *m
 			c.AbortWithError(http.StatusInternalServerError,err)
 		}
 		session.Save(c.Request,c.Writer)
-		c.Redirect(303,"http://localhost:5010/greenhome/ui/m/home")
+		c.Redirect(303,redirectUrl)
 	}else {
 		fmt.Println("Something went wrong , token is empty.")
-		c.HTML(http.StatusOK, "login.html",gin.H{})
+		c.HTML(http.StatusOK, "login.html",config)
 	}
 
 
 }
 
-func Logout(store *sessions.CookieStore,c *gin.Context){
+func Logout(store *sessions.CookieStore,c *gin.Context,config *model.AppConfigs){
 	session , _ := store.Get(c.Request,"gh_user")
 	session.Options.MaxAge = -1
 	session.Save(c.Request,c.Writer)
-	logout_url := "https://zmarlin.eu.auth0.com/logout?client_id=njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti"
+	logout_url := "https://zmarlin.eu.auth0.com/logout?client_id="+config.AuthClientId
 	c.Redirect(303,logout_url)
 
 }

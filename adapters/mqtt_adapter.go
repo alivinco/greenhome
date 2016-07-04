@@ -7,6 +7,7 @@ import (
 	"strings"
 	"github.com/alivinco/greenhome/model"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 )
 
 type MqttAdapter struct {
@@ -34,6 +35,7 @@ func (mh *MqttAdapter)SeMessageHandler(msgHandler MessageHandler){
 }
 
 func (mh *MqttAdapter)Start()(error){
+	log.Info("Connecting to MQTT broker ")
 	if token := mh.client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
