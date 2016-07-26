@@ -2,7 +2,6 @@ package adapters
 
 import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"github.com/golang/glog"
 	"github.com/alivinco/iotmsglibgo"
 	"strings"
 	"github.com/alivinco/greenhome/model"
@@ -30,7 +29,7 @@ func NewMqttAdapter(serverUri string ,clientId string)(*MqttAdapter) {
 	return &mh
 }
 
-func (mh *MqttAdapter)SeMessageHandler(msgHandler MessageHandler){
+func (mh *MqttAdapter)SetMessageHandler(msgHandler MessageHandler){
 	mh.msgHandler = msgHandler
 }
 
@@ -48,26 +47,40 @@ func (mh *MqttAdapter)Stop(){
 func (mh *MqttAdapter)Subscribe(topic string,qos byte)(error){
 	//subscribe to the topic /go-mqtt/sample and request messages to be delivered
 	//at a maximum qos of zero, wait for the receipt to confirm the subscription
+	log.Debug("Subscribing to topic:",topic)
 	if token := mh.client.Subscribe(topic, qos, nil); token.Wait() && token.Error() != nil {
-		glog.Info(token.Error())
+		log.Info(token.Error())
 		return token.Error()
 	}
 	return nil
 }
 
+
 func (mh *MqttAdapter)Unsubscribe(topic string)(error){
+	  log.Debug("Unsubscribing from topic:",topic)
 	  if token := mh.client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
 	    return token.Error()
 	  }
 	  return nil
 }
 
+// The method should be invoked whenever topics are modified in data model
+func (mh *MqttAdapter)TopicChangeHandler(topics []string,isSub bool,ctx *model.Context){
+	for _,topic := range topics{
+		if isSub {
+			mh.Subscribe(AddDomainToTopic(ctx.Domain,topic),1)
+		}else{
+			mh.Unsubscribe(AddDomainToTopic(ctx.Domain,topic))
+		}
+	}
+}
+
 
 
 //define a function for the default message handler
 func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {
-	glog.Info("TOPIC: %s\n", msg.Topic())
-	glog.Info("MSG: %s\n", msg.Payload())
+	log.Info("TOPIC: %s\n", msg.Topic())
+	log.Info("MSG: %s\n", msg.Payload())
 	fmt.Println("New msg from topic:",msg.Topic())
 	domain , topic := DetachDomainFromTopic(msg.Topic())
 	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(topic,msg.Payload(),nil)
@@ -75,7 +88,7 @@ func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {
 	if err == nil {
 		mh.msgHandler("mqtt",topic,iotMsg , &ctx)
 	} else {
-		glog.Error(err)
+		log.Error(err)
 
 	}
 }
@@ -114,3 +127,5 @@ func DetachDomainFromTopic(topic string ) (string , string) {
 	return spt[0] , top
 
 }
+
+

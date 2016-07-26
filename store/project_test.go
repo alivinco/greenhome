@@ -19,7 +19,7 @@ func TestProjectStore_Upsert(t *testing.T) {
 		Domain:"livincovi",
 		GeoLocation:model.GeoLocation{Lat:58.955755,Long:5.691449},
 		Views: []model.View{
-			model.View{Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca3"),Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
 				model.Thing{
 					Name:                "switch2",
 					Type:                "bianry.switch",
@@ -28,7 +28,7 @@ func TestProjectStore_Upsert(t *testing.T) {
 					UiElement:           "binary_switch"},
 			},
 			},
-			model.View{Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca4"),Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
 				model.Thing{
 					Name:                "switch1",
 					Type:                "bianry.switch",
@@ -107,6 +107,86 @@ func  TestProjectStore_GetById(t *testing.T) {
 		t.Error(err)
 	}
 
+}
+
+
+func TestGetUpdatedTopics(t *testing.T) {
+	projectOld := model.Project{
+		Id:bson.ObjectIdHex("57573834554efc2c77b59f97"),
+		Name:"StavangerHome",
+		Domain:"livincovi",
+		GeoLocation:model.GeoLocation{Lat:58.955755,Long:5.691449},
+		Views: []model.View{
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca3"),Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
+				model.Thing{
+					Id:		     "1",
+					Name:                "switch2",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
+					ControlElementTopic: "jim1/cmd/ta/zw/3/bin_switch/1",
+					UiElement:           "binary_switch"},
+			},
+			},
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca4"),Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
+				model.Thing{
+					Id:		     "2",
+					Name:                "switch1",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "jim1/evt/ta/zw/2/bin_switch/1",
+					ControlElementTopic: "jim1/cmd/ta/zw/2/bin_switch/1",
+					UiElement:           "binary_switch",
+				}, model.Thing{
+					Id:		     "3",
+					Name:                "switch12",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "/dev/zw/2/bin_switch/1/events",
+					ControlElementTopic: "/dev/zw/2/bin_switch/1/commands",
+					UiElement:           "binary_switch",
+				},
+			},
+			},
+		},
+	}
+	projectNew := model.Project{
+		Id:bson.ObjectIdHex("57573834554efc2c77b59f97"),
+		Name:"StavangerHome",
+		Domain:"livincovi",
+		GeoLocation:model.GeoLocation{Lat:58.955755,Long:5.691449},
+		Views: []model.View{
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca3"),Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
+				model.Thing{
+					Id:		     "1",
+					Name:                "switch2",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
+					ControlElementTopic: "jim1/cmd/ta/zw/3/bin_switch/1",
+					UiElement:           "binary_switch"},
+			},
+			},
+			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca4"),Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
+				model.Thing{
+					Id:		     "2",
+					Name:                "switch1",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
+					ControlElementTopic: "jim1/cmd/ta/zw/2/bin_switch/1",
+					UiElement:           "binary_switch",
+				}, model.Thing{
+					Id:		     "3",
+					Name:                "switch12",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "/dev/zw/2/bin_switch/1/events",
+					ControlElementTopic: "/dev/zw/2/bin_switch/1/commands",
+					UiElement:           "binary_switch",
+				},
+			},
+			},
+		},
+	}
+
+	subT , unsubT := GetUpdatedTopics(&projectNew,&projectOld)
+	t.Log("App should subscribe for :",subT)
+	t.Log("App should unsubscribe from :",unsubT)
 }
 
 func TestMain(m *testing.M) {

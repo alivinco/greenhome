@@ -20,6 +20,7 @@ type Thing struct {
 }
 
 type View struct {
+	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name string `json:"name"`
 	Label string `json:"label"`
 	Room string `json:"room"`
@@ -28,12 +29,6 @@ type View struct {
 	UiGroup string `json:"ui_group"`
 	Things []Thing `json:"thing"`
 }
-
-//type MobileUi struct {
-//	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
-//	Project bson.ObjectId `json:"project_id"`
-//	Views []View `json:"view"`
-//}
 
 type Project struct {
 	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`

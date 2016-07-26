@@ -12,7 +12,7 @@ func  OnMessage(adapter string,topic string,iotMsg *IotMsg.IotMsg){
 
 func TestNewMqttAdapter(t *testing.T) {
 	ad := NewMqttAdapter("tcp://localhost:1883","greenhome_test")
-	ad.SeMessageHandler(OnMessage)
+	ad.SetMessageHandler(OnMessage)
 	ad.Start()
 	ad.Subscribe("jim1/cmd/test/grhome",1)
 	iotMsg := IotMsg.NewIotMsg(IotMsg.MsgTypeCmd,"binary","switch",nil)

@@ -55,6 +55,7 @@ func InitAdaptersAndMainRouter(){
 	if wsGroup != nil{
 		wsa = adapters.NewWsAdapter(wsGroup)
 		mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
+		projectStore.SetTopicChangeHandler(mqa.TopicChangeHandler)
 		err := mqa.Start()
 		if err !=nil {
 			log.Fatal("Can't connect to mqtt broker. ",err)
@@ -107,7 +108,7 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 			session , _ := sessionStore.Get(c.Request,"gh_user")
 			domain := session.Values["domain_id"].(string)
 			ctx := model.Context{domain}
-			store.ExtendMobileUiWithValue(thingsCacheStore,mobUi,&ctx)
+			store.ExtendThingsWithValues(thingsCacheStore,mobUi,&ctx)
         		c.HTML(http.StatusOK, "start.html",gin.H{"mobUi":mobUi,"domain":domain})
 		})
 	mobAppRoot.GET("/security",func(c *gin.Context) {
@@ -135,7 +136,9 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	apiAppRoot := r.Group("/greenhome/api")
 	apiAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	apiAppRoot.GET("/project/:project_id",projectController.GetProject)
-
+	apiAppRoot.GET("/projects",projectController.GetProjects)
+	apiAppRoot.POST("/project",projectController.PostProject)
+	// WS Endpoint
 	wsGroup = r.Group("/greenhome/ws")
 	wsGroup.Use(auth.AuthMiddleware(sessionStore))
 	return r
@@ -165,7 +168,8 @@ func main() {
 	configs = &model.AppConfigs{}
 	configs.AuthClientId = "njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti"
 	configs.AuthClientSecret = "T2kdCk2kTrbprreq2Dlc-qm5klDTjd5UAzHASWFPlehO4yAwoxfilnUgLoGMmR1p"
-	configs.AppRootUrl = "http://192.168.80.237:5010"
+	//configs.AppRootUrl = "http://192.168.80.237:5010"
+	configs.AppRootUrl = "http://192.168.88.73:5010"
 	InitDb()
 	InitStores()
 	r := InitHttpServer(bindAddress,jwtSecret)

@@ -25,7 +25,7 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
       status: 2,
       agenda: 1,
       remember: false
-    }; 
+    };
 
     $scope.statuses = [
       {value: 1, text: 'status1'},
@@ -56,6 +56,7 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
     ];
 
     $scope.things = []
+    $scope.views = []
 
     $scope.groups = [];
     $scope.loadGroups = function() {
@@ -90,38 +91,87 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
     $scope.saveUser = function(data, id) {
       //$scope.user not updated yet
       angular.extend(data, {id: id});
+      console.dir(data)
       // return $http.post('api/saveUser', data);
     };
 
-    // remove user
-    $scope.removeUser = function(index) {
-      $scope.users.splice(index, 1);
+    // remove user444444
+    $scope.removeThing = function(index) {
+      $scope.things.splice(index, 1);
     };
 
-    // add user
-    $scope.addUser = function() {
-      $scope.inserted = {
-        id: $scope.users.length+1,
+    $scope.addView = function() {
+      inserted = {
+        id: "",
         name: '',
-        status: null,
-        group: null 
+        room: '',
+        floor: 0,
+        zone_name: '',
+        thing:[]
       };
-      $scope.users.push($scope.inserted);
+      $scope.views.push(inserted);
     };
 
-    $scope.loadProject = function(){
-        $http.get('/greenhome/api/project/57573834554efc2c77b59f97').
+    // add thing
+    $scope.addThing = function() {
+      $scope.inserted = {
+        id: "",
+        name: '',
+        type: '',
+        display_topic: '',
+        control_topic: '',
+        ui_element:'sensor',
+        max_value:0,
+        min_value:0,
+        value:null,
+        unit:"",
+        updated_at:"0001-01-01T00:00:00Z",
+        prop_field_ui:""
+      };
+      $scope.things.push($scope.inserted);
+    };
+
+
+
+    //$scope.loadProject = function(){
+    //    $http.get('/greenhome/api/project/57573834554efc2c77b59f97').
+    //    then(function (response) {
+    //        $scope.project = response.data
+    //    }, function (response) {
+    //        // called asynchronously if an error occurs
+    //        // or server returns response with an error status.
+    //    });
+    //}
+    $scope.loadProjects = function(){
+        $http.get('/greenhome/api/projects').
         then(function (response) {
-            $scope.project = response.data
+            $scope.projects = response.data
         }, function (response) {
             // called asynchronously if an error occurs
             // or server returns response with an error status.
         });
     }
-    $scope.loadProject()
+    $scope.saveProject = function(){
+      $http.post("/greenhome/api/project",JSON.stringify($scope.project)).
+      then(function (response) {
+            alert("Project saved")
+        }, function (response) {
+
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+        });
+
+    }
+    $scope.loadProjects()
     $scope.loadView = function(view) {
-      console.dir(view)
+      //console.dir(view)
       $scope.things = view.thing
+    };
+    $scope.loadProject = function(project) {
+      //console.dir(project)
+      $scope.project = project
+      $scope.views = project.view
+      $scope.things = []
     };
     $scope.showStruct = function(){
       console.dir($scope.project)
