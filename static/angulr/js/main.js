@@ -32,8 +32,8 @@ angular.module('app')
           asideColor: 'bg-black',
           headerFixed: true,
           asideFixed: false,
-          asideFolded: false,
-          asideDock: false,
+          asideFolded: true,
+          asideDock: true,
           container: false
         }
       }

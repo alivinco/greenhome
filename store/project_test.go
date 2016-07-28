@@ -14,12 +14,12 @@ var db *mgo.Database
 func TestProjectStore_Upsert(t *testing.T) {
 	prStore := NewProjectStore(session,db)
 	project := model.Project{
-		Id:bson.ObjectIdHex("57573834554efc2c77b59f97"),
-		Name:"StavangerHome",
+		Id:"",
+		Name:"AutoTestProject",
 		Domain:"livincovi",
 		GeoLocation:model.GeoLocation{Lat:58.955755,Long:5.691449},
 		Views: []model.View{
-			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca3"),Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
+			model.View{Id:"",Name: "Living room", Room: "Living", Floor: 1, Things: []model.Thing{
 				model.Thing{
 					Name:                "switch2",
 					Type:                "bianry.switch",
@@ -28,7 +28,7 @@ func TestProjectStore_Upsert(t *testing.T) {
 					UiElement:           "binary_switch"},
 			},
 			},
-			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca4"),Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
+			model.View{Id:"",Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
 				model.Thing{
 					Name:                "switch1",
 					Type:                "bianry.switch",
@@ -62,7 +62,14 @@ func TestProjectStore_Upsert(t *testing.T) {
 			},
 		},
 	}
-	prStore.Upsert(&project)
+	newId , err := prStore.Upsert(&project)
+	if err == nil{
+		prStore.Delete(newId)
+		t.Log("New project was created and delted. Project id = ",newId)
+	}else{
+		t.Error(err)
+	}
+
 	// Update
 	//MobileUi := model.MobileUi{Id:bson.ObjectIdHex("57573834554efc2c77b59f97"),Name:"StavangerHome",Domain:"livincovi",GeoLocation:model.GeoLocation{Lat:58.955755,Long:5.691449}}
 

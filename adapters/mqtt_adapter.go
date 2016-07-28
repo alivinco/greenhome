@@ -70,7 +70,12 @@ func (mh *MqttAdapter)TopicChangeHandler(topics []string,isSub bool,ctx *model.C
 		if isSub {
 			mh.Subscribe(AddDomainToTopic(ctx.Domain,topic),1)
 		}else{
-			mh.Unsubscribe(AddDomainToTopic(ctx.Domain,topic))
+			if topic != ""{
+				mh.Unsubscribe(AddDomainToTopic(ctx.Domain,topic))
+			}else{
+				log.Debug("Topic is empty , nothing to unsubscribe.")
+			}
+
 		}
 	}
 }

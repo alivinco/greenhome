@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"flag"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -16,6 +15,9 @@ import (
 	"io/ioutil"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/greenhome/controller"
+	"github.com/caarlos0/env"
+	"github.com/BurntSushi/toml"
+	"fmt"
 )
 var session *mgo.Session
 var db *mgo.Database
@@ -30,7 +32,7 @@ var wsGroup *gin.RouterGroup
 
 func InitDb(){
 	var err error
-	session ,err = mgo.Dial("localhost")
+	session ,err = mgo.Dial(configs.MongoConnUri)
 	if err == nil {
 		session.SetMode(mgo.Monotonic, true)
 		db = session.DB("greenhome")
@@ -39,7 +41,8 @@ func InitDb(){
 func InitStores(){
 	projectStore = store.NewProjectStore(session,db)
 	thingsCacheStore = store.NewThingsCacheStore()
-	secretFileName = "./sessionsecret.db"
+	secretFileName = configs.SessionStoreFile
+	//secretFileName = "./sessionsecret.db"
 	var err error
 	sessionSecret , err := ioutil.ReadFile(secretFileName)
 	if err != nil {
@@ -54,7 +57,8 @@ func InitStores(){
 func InitAdaptersAndMainRouter(){
 	if wsGroup != nil{
 		wsa = adapters.NewWsAdapter(wsGroup)
-		mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
+		mqa = adapters.NewMqttAdapter(configs.MqttBrokerUri,configs.MqttConnClientId)
+		//mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 		projectStore.SetTopicChangeHandler(mqa.TopicChangeHandler)
 		err := mqa.Start()
 		if err !=nil {
@@ -136,6 +140,7 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	apiAppRoot := r.Group("/greenhome/api")
 	apiAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	apiAppRoot.GET("/project/:project_id",projectController.GetProject)
+	apiAppRoot.DELETE("/project/:project_id",projectController.DeleteProject)
 	apiAppRoot.GET("/projects",projectController.GetProjects)
 	apiAppRoot.POST("/project",projectController.PostProject)
 	// WS Endpoint
@@ -144,36 +149,38 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	return r
 }
 
+func LoadConfigs(){
+	configs = &model.AppConfigs{}
+    	var configFile string
+	flag.StringVar(&configFile,"c","","Config file")
+	flag.Parse()
+	if configFile != "" {
+		fmt.Println("Loading configs from file ",configFile)
+		if _, err := toml.DecodeFile(configFile,configs);err != nil {
+			panic(err)
+		}
+	} else {
+		fmt.Println("Loading configs from ENV .")
+		if err := env.Parse(configs);err != nil {
+			panic(err)
+		}
+	}
+	fmt.Println("Starting GreenHome with paramters")
+	fmt.Printf("%+v\n", configs)
+}
+
 func main() {
+	LoadConfigs()
 	log.SetFormatter(&log.TextFormatter{FullTimestamp:true,ForceColors:true})
 	log.SetLevel(log.DebugLevel)
-	bindAddress := ":6000"
-	jwtSecret := ""
-    // Load configs from env variable or from command line .
-	bindAddress = os.Getenv("BFH_BIND_ADDR")
-	if bindAddress != "" {
-		jwtSecret = os.Getenv("BFH_JWT_SECRET")
-	}else{
-		flag.StringVar(&bindAddress,"addr",":5010","Server bind address")
-		flag.StringVar(&jwtSecret,"jwt_secret","","Jwt secret")
-	}
-
-	flag.Parse()
-	log.Info("addr:",bindAddress)
-	log.Info("jwt_secret:",jwtSecret)
 	defer func(){
 		UnsubscribeMqttTopics()
 		session.Close()
 	}()
-	configs = &model.AppConfigs{}
-	configs.AuthClientId = "njwDYXaCFOS2TzTHGQaBUTk8GiXNgLti"
-	configs.AuthClientSecret = "T2kdCk2kTrbprreq2Dlc-qm5klDTjd5UAzHASWFPlehO4yAwoxfilnUgLoGMmR1p"
-	//configs.AppRootUrl = "http://192.168.80.237:5010"
-	configs.AppRootUrl = "http://192.168.88.73:5010"
 	InitDb()
 	InitStores()
-	r := InitHttpServer(bindAddress,jwtSecret)
+	r := InitHttpServer(configs.BindAddress,configs.JwtSecret)
 	InitAdaptersAndMainRouter()
-	r.Run(bindAddress)
+	r.Run(configs.BindAddress)
 
 }

@@ -55,18 +55,25 @@ func (mst *ProjectRestController) PostProject(c *gin.Context){
 	if auth.IsAuthenticated {
 		var project model.Project
 		if c.BindJSON(&project) == nil {
-			if auth.DomainId == project.Domain {
-				// TODO: subscribe/unsubscribe to/from topic if modified.
-				mst.ProjectStore.Upsert(&project)
-			}else{
-				 log.Warn("Unauthorized request")
-				 c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized request"))
-			     }
+			project.Domain = auth.DomainId
+			mst.ProjectStore.Upsert(&project)
 		}else {
 			log.Warn("Can't bind model")
 			c.AbortWithError(http.StatusInternalServerError, errors.New("Can't bind model"))
 		}
 
+	}else{
+		log.Warn("Unauthorized request")
+		c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized request"))
+	}
+
+}
+
+func (mst *ProjectRestController) DeleteProject(c *gin.Context){
+	projectId := c.Param("project_id")
+	auth := utils.GetAuthRequest(c)
+	if auth.IsAuthenticated && auth.DomainId == mst.ProjectStore.GetDomainByProjectId(projectId){
+		mst.ProjectStore.Delete(projectId)
 	}else{
 		log.Warn("Unauthorized request")
 		c.AbortWithError(http.StatusUnauthorized, errors.New("Unauthorized request"))

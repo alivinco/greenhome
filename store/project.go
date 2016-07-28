@@ -8,6 +8,7 @@ import (
 	"github.com/alivinco/greenhome/adapters"
 	log "github.com/Sirupsen/logrus"
 	"github.com/alivinco/iotmsglibgo"
+	"errors"
 )
 
 type ProjectStore struct {
@@ -58,8 +59,10 @@ func (ps *ProjectStore) Upsert(project *model.Project) (string,error){
 		log.Info("Topics for sub:",subT)
 		log.Info("Topics to unsub:",unsubT)
 		ctx := model.Context{Domain:project.Domain}
-		ps.topicChangeHandler(subT,true,&ctx)
-		ps.topicChangeHandler(unsubT,false,&ctx)
+		if ps.topicChangeHandler != nil{
+			ps.topicChangeHandler(subT,true,&ctx)
+			ps.topicChangeHandler(unsubT,false,&ctx)
+		}
 		if info.UpsertedId != nil {
 			return info.UpsertedId.(bson.ObjectId).Hex(), err
 		} else {
@@ -69,8 +72,16 @@ func (ps *ProjectStore) Upsert(project *model.Project) (string,error){
 		return "" , err
 	}
 }
-func (ms *ProjectStore) Delete(ID string) error{
-	return ms.projectC.RemoveId(bson.ObjectIdHex(ID))
+func (ps *ProjectStore) Delete(ID string) error{
+	ctx := model.Context{ps.GetDomainByProjectId(ID)}
+	if ctx.Domain == "" {
+		return errors.New("Invalid project id ")
+	}
+	unsubTopics , _ := ps.GetSubscriptions(ID,true)
+	if ps.topicChangeHandler != nil{
+			ps.topicChangeHandler(unsubTopics,false,&ctx)
+	}
+	return ps.projectC.RemoveId(bson.ObjectIdHex(ID))
 }
 
 // GetList returns list of all apps
@@ -99,10 +110,30 @@ func (ms *ProjectStore) GetById(id string) (*model.Project,error){
 
 }
 
+// GetList returns list of all apps
+func (ms *ProjectStore) GetDomainByProjectId(id string) (string){
+	result := model.Project{}
+	//var domain string
+	err := ms.projectC.FindId(bson.ObjectIdHex(id)).Select(bson.M{"domain":1}).One(&result)
+	if err == nil{
+		return result.Domain
+	}else {
+		log.Error("Error while domain lookup",err)
+		return ""
+	}
+
+}
+
 func (ms *ProjectStore) GetSubscriptions(projectId string , global bool)([]string ,error){
 	var results []model.Project
 	//projection := bson.M{"views.things.displayelementtopic":1}
-	err := ms.projectC.Find(nil).All(&results)
+	var err error
+	if projectId != "" {
+		err = ms.projectC.FindId(bson.ObjectIdHex(projectId)).All(&results)
+	}else {
+		err = ms.projectC.Find(nil).All(&results)
+	}
+
 	if err != nil {
 		return nil,err
 	}

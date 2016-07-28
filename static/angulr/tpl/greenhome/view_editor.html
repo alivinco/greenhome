@@ -19,19 +19,19 @@
       </td>
       <td class="v-middle">
         <!-- editable status (select-local) -->
-        <span editable-text="project.domain" e-name="label" e-form="rowform">
+        <span editable-text="project.domain" e-name="domain" e-form="rowform">
            {{ project.domain  }}
         </span>
       </td>
       <td class="v-middle">
         <!-- editable group (select-remote) -->
-        <span editable-text="project.comments" e-name="room"  e-form="rowform" >
+        <span editable-text="project.comments" e-name="comments"  e-form="rowform" >
            {{ project.comments  }}
         </span>
       </td>
       <td style="white-space: nowrap">
         <!-- form -->
-        <form editable-form name="rowform" onbeforesave="saveUser($data, project.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+        <form editable-form name="rowform"  ng-show="rowform.$visible" class="form-buttons form-inline" >
           <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-sm btn-info">
             save
           </button>
@@ -41,17 +41,17 @@
         </form>
         <div class="buttons" ng-show="!rowform.$visible">
           <button class="btn btn-sm btn-info" ng-click="rowform.$show()">edit</button>
-          <button class="btn btn-sm btn-danger" ng-click="removeUser($index)">del</button>
+          <button class="btn btn-sm btn-danger" ng-click="deleteProject(project.id)">del</button>
         </div>
       </td>
     </tr>
   </table>
 
-  <button class="btn btn-default m-b-lg" ng-click="addUser()">Add row</button>
+  <button class="btn btn-default m-b-lg" ng-click="addProject()">Add project</button>
 
 </div>
 <div class="wrapper-md">
-  <h4>Views</h4>
+  <h4>Views in {{project.name}}</h4>
   <table class="table table-bordered table-hover table-condensed bg-white-only">
     <tr style="font-weight: bold">
       <td style="width:20%">Name</td>
@@ -101,7 +101,7 @@
       </td>
       <td style="white-space: nowrap">
         <!-- form -->
-        <form editable-form name="rowform" onbeforesave="saveUser($data, project.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+        <form editable-form name="rowform"  ng-show="rowform.$visible" class="form-buttons form-inline" >
           <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-sm btn-info">
             save
           </button>
@@ -111,7 +111,7 @@
         </form>
         <div class="buttons" ng-show="!rowform.$visible">
           <button class="btn btn-sm btn-info" ng-click="rowform.$show()">edit</button>
-          <button class="btn btn-sm btn-danger" ng-click="removeUser($index)">del</button>
+          <button class="btn btn-sm btn-danger" ng-click="removeView($index)">del</button>
         </div>  
       </td>
     </tr>
@@ -122,7 +122,7 @@
 </div>
 
 <div class="wrapper-md">
-  <h4>Things</h4>
+  <h4>Things in {{view.name}}</h4>
   <table class="table table-bordered table-hover table-condensed bg-white-only">
     <tr style="font-weight: bold">
       <td style="width:10%">Name</td>
@@ -180,7 +180,7 @@
 
       <td style="white-space: nowrap">
         <!-- form -->
-        <form editable-form name="rowform" onbeforesave="saveUser($data, user.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+        <form editable-form name="rowform"  ng-show="rowform.$visible" class="form-buttons form-inline" >
           <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-sm btn-info">
             save
           </button>

@@ -1,39 +1,5 @@
 <!-- list -->
 <ul class="nav">
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
-    <span translate="aside.nav.HEADER">Navigation</span>
-  </li>
-  <li>
-    <a href class="auto">      
-      <span class="pull-right text-muted">
-        <i class="fa fa-fw fa-angle-right text"></i>
-        <i class="fa fa-fw fa-angle-down text-active"></i>
-      </span>
-      <i class="glyphicon glyphicon-stats icon text-primary-dker"></i>
-      <span class="font-bold" translate="aside.nav.DASHBOARD">Dashboard</span>
-    </a>
-    <ul class="nav nav-sub dk">
-      <li class="nav-sub-header">
-        <a href>
-          <span translate="aside.nav.DASHBOARD">Dashboard</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.dashboard-v1">
-          <span>Dashboard v1</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.dashboard-v2">
-          <b class="label bg-info pull-right">N</b>
-          <span>Dashboard v2</span>
-        </a>
-      </li>
-    </ul>
-  </li>
-
-
-  <li class="line dk"></li>
 
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span translate="aside.nav.components.COMPONENTS">Components</span>
@@ -41,148 +7,13 @@
   <li ui-sref-active="active">
     <a ui-sref="app.ui.vieweditor">
       <i class="glyphicon glyphicon-signal"></i>
-      <span >Views</span>
+      <span>Projects</span>
     </a>
   </li>
-  <li ng-class="{active:$state.includes('app.table')}">
-    <a href class="auto">
-      <span class="pull-right text-muted">
-        <i class="fa fa-fw fa-angle-right text"></i>
-        <i class="fa fa-fw fa-angle-down text-active"></i>
-      </span>
-      <b class="label bg-primary pull-right">2</b>
-      <i class="glyphicon glyphicon-list"></i>
-      <span translate="aside.nav.components.table.TABLE">Table</span>
-    </a>
-    <ul class="nav nav-sub dk">
-      <li class="nav-sub-header">
-        <a href>
-          <span translate="aside.nav.components.table.TABLE">Table</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.static">
-          <span translate="aside.nav.components.table.TABLE_STATIC">Table static</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.datatable">
-          <span translate="aside.nav.components.table.DATATABLE">Datatable</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.footable">
-          <span translate="aside.nav.components.table.FOOTABLE">Footable</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.grid">
-          <span>ngGrid</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.uigrid">
-          <span>uiGrid</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.smart">
-          <span>Smart table</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.table.editable">
-          <span>Editable</span>
-        </a>
-      </li>
-    </ul>
-  </li>
-  <li ng-class="{active:$state.includes('app.form')}">
-    <a href class="auto">
-      <span class="pull-right text-muted">
-        <i class="fa fa-fw fa-angle-right text"></i>
-        <i class="fa fa-fw fa-angle-down text-active"></i>
-      </span>
-      <i class="glyphicon glyphicon-edit"></i>
-      <span translate="aside.nav.components.form.FORM">Form</span>
-    </a>
-    <ul class="nav nav-sub dk">
-      <li class="nav-sub-header">
-        <a href>
-          <span translate="aside.nav.components.form.FORM">Form</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.elements">
-          <span translate="aside.nav.components.form.FORM_ELEMENTS">Form elements</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.validation">
-          <span translate="aside.nav.components.form.FORM_VALIDATION">Form validation</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.wizard">
-          <span translate="aside.nav.components.form.FORM_WIZARD">Form wizard</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.fileupload">
-          <span>File upload</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.imagecrop">
-          <span>Image crop</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.select">
-          <span>Select</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.slider">
-          <span>Slider</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.editor">
-          <span>Editor</span>
-        </a>
-      </li>
-      <li ui-sref-active="active">
-        <a ui-sref="app.form.xeditable">
-          <span>Xeditable</span>
-        </a>
-      </li>
-    </ul>
-  </li>
-  <li ui-sref-active="active">
-    <a ui-sref="app.chart">
-      <i class="glyphicon glyphicon-signal"></i>
-      <span translate="aside.nav.components.CHART">Chart</span>
-    </a>
-  </li>
+
 
   <li class="line dk hidden-folded"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">          
-    <span translate="aside.nav.your_stuff.YOUR_STUFF">Your Stuff</span>
-  </li>  
-  <li>
-    <a ui-sref="app.page.profile">
-      <i class="icon-user icon text-success-lter"></i>
-      <b class="badge bg-success pull-right">30%</b>
-      <span translate="aside.nav.your_stuff.PROFILE">Profile</span>
-    </a>
-  </li>
-  <li>
-    <a ui-sref="app.docs">
-      <i class="icon-question icon"></i>
-      <span translate="aside.nav.your_stuff.DOCUMENTS">Documents</span>
-    </a>
-  </li>
+
 </ul>
 <!-- / list -->
