@@ -1,20 +1,17 @@
  {{ template "header.html" .}}
+ <header class="bar bar-nav">
+  <a class="icon icon-left-nav pull-left" href="/greenhome/ui/m/rooms"></a>
+  <!--<a class="icon icon-compose pull-right"></a>-->
+  <h1 class="title">{{ .view.Room }}</h1>
+</header>
     <!-- Wrap all non-bar HTML in the .content div (this is actually what scrolls) -->
-    <header class="bar bar-nav">
-      <h1 class="title">GreenHome</h1>
-      <a class="icon icon-gear pull-right" href="security"></a>
-    </header>
      <div class="content">
         <ul class="table-view">
-          {{ range .project.Views }}
-            {{ if eq .UiGroup "home"}}
-                {{ range .Things}}
+                {{ range .view.Things}}
                 <li class="table-view-cell">
                      {{ template "ui_element.html" .}}
                 </li>
                 {{ end}}
-            {{ end}}
-          {{end}}
         </ul>
     </div>
  {{ template "footer.html" .}}

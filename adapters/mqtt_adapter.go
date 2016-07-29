@@ -5,7 +5,6 @@ import (
 	"github.com/alivinco/iotmsglibgo"
 	"strings"
 	"github.com/alivinco/greenhome/model"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -81,12 +80,11 @@ func (mh *MqttAdapter)TopicChangeHandler(topics []string,isSub bool,ctx *model.C
 }
 
 
-
 //define a function for the default message handler
 func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {
+	log.Info("**New msg**")
 	log.Info("TOPIC: %s\n", msg.Topic())
-	log.Info("MSG: %s\n", msg.Payload())
-	fmt.Println("New msg from topic:",msg.Topic())
+	log.Debug("MSG: %s\n", msg.Payload())
 	domain , topic := DetachDomainFromTopic(msg.Topic())
 	iotMsg ,err := iotmsglibgo.ConvertBytesToIotMsg(topic,msg.Payload(),nil)
 	ctx := model.Context{Domain:domain}
@@ -99,10 +97,10 @@ func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {
 }
 
 func (mh *MqttAdapter)Publish(topic string,iotMsg *iotmsglibgo.IotMsg , qos byte,ctx *model.Context)(error){
-	topic = AddDomainToTopic(ctx.Domain,topic)
 	bytm , err := iotmsglibgo.ConvertIotMsgToBytes(topic,iotMsg,nil)
+	topic = AddDomainToTopic(ctx.Domain,topic)
 	if err == nil {
-		fmt.Println("Publishing msg to topic:",topic)
+		log.Info("Publishing msg to topic:",topic)
 		mh.client.Publish(topic,qos,false,bytm)
 		return nil
 	}else{

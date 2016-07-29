@@ -18,6 +18,7 @@ import (
 	"github.com/caarlos0/env"
 	"github.com/BurntSushi/toml"
 	"fmt"
+	"gopkg.in/mgo.v2/bson"
 )
 var session *mgo.Session
 var db *mgo.Database
@@ -87,9 +88,20 @@ func UnsubscribeMqttTopics(){
 	}
 }
 
+func GetProject(c *gin.Context)(project *model.Project , domain string){
+			session , _ := sessionStore.Get(c.Request,"gh_user")
+			project , _ = projectStore.GetById(session.Values["project_id"].(string))
+			domain = session.Values["domain_id"].(string)
+			ctx := model.Context{domain}
+			store.ExtendThingsWithValues(thingsCacheStore,project,&ctx)
+			return
+	}
+
 func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	//decoded_secret, _ := base64.URLEncoding.DecodeString(jwtSecret)
 	r := gin.Default()
+	//projectId := "57573834554efc2c77b59f97"
+
 	//m := melody.New()
 	r.Static("/greenhome/static","./static")
 	r.LoadHTMLGlob("templates/**/*")
@@ -105,25 +117,30 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	//mobAppRoot.Use(auth.Auth(string(decoded_secret)))
 	mobAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	mobAppRoot.GET("/home",func(c *gin.Context) {
-			c.Get("UserData")
-			//user,_:=c.Get("UserData")
-			projectId := "57573834554efc2c77b59f97"
-			mobUi , _ := projectStore.GetById(projectId)
-			session , _ := sessionStore.Get(c.Request,"gh_user")
-			domain := session.Values["domain_id"].(string)
-			ctx := model.Context{domain}
-			store.ExtendThingsWithValues(thingsCacheStore,mobUi,&ctx)
-        		c.HTML(http.StatusOK, "start.html",gin.H{"mobUi":mobUi,"domain":domain})
+			project , domain := GetProject(c)
+        		c.HTML(http.StatusOK, "start.html",gin.H{"project":project,"domain":domain})
+		})
+	mobAppRoot.GET("/view/:view_id",func(c *gin.Context) {
+			project , domain := GetProject(c)
+			viewId , _ := c.Params.Get("view_id")
+			var view *model.View
+			for _ , v :=  range project.Views{
+				if v.Id == bson.ObjectIdHex(viewId){
+					view = &v
+					break
+				}
+			}
+        		c.HTML(http.StatusOK, "view.html",gin.H{"view":view,"domain":domain,"view_id":viewId})
 		})
 	mobAppRoot.GET("/security",func(c *gin.Context) {
-			c.Get("UserData")
-			//user,_:=c.Get("UserData")
-        		c.HTML(http.StatusOK, "security.html",gin.H{})
+			project , domain := GetProject(c)
+			c.HTML(http.StatusOK, "security.html",gin.H{"project":project,"domain":domain})
 		})
 	mobAppRoot.GET("/rooms",func(c *gin.Context) {
 			c.Get("UserData")
 			//user,_:=c.Get("UserData")
-        		c.HTML(http.StatusOK, "rooms.html",gin.H{})
+			project , domain := GetProject(c)
+        		c.HTML(http.StatusOK, "rooms.html",gin.H{"project":project,"domain":domain})
 		})
 	mobAppRoot.GET("/logs",func(c *gin.Context) {
 			c.Get("UserData")

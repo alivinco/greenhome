@@ -99,6 +99,7 @@ func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *m
 		session.Values["username"] = userInfo.Name
 		session.Values["email"] = userInfo.Email
 		session.Values["domain_id"] = userInfo.DomainID
+		session.Values["project_id"] = "57573834554efc2c77b59f97"
 		if userInfo.DomainID == ""{
 			fmt.Println("Error getting User info from Auth0")
 			c.AbortWithError(http.StatusInternalServerError,err)

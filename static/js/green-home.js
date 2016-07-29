@@ -17,6 +17,10 @@ function CmdBinarySwitch(topic,value){
     ws.send(msg)
 }
 
+function CmdModeAlarm(topic,value){
+    msg = NewMsg(topic,"cmd","mode","alarm",{value:value})
+    ws.send(msg)
+}
 
 // ratchet.js push handler which is called whenever new page is loaded by push.js
 function pushHandler(event){

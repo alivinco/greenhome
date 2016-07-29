@@ -33,6 +33,7 @@ type View struct {
 type Project struct {
 	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	Name string `json:"name"`
+	Type string `json:"type"`
 	Domain string `json:"domain"`
 	Comments string `json:"comments"`
 	GeoLocation GeoLocation `json:"geo_location"`

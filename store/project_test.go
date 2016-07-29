@@ -25,7 +25,8 @@ func TestProjectStore_Upsert(t *testing.T) {
 					Type:                "bianry.switch",
 					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
 					ControlElementTopic: "jim1/cmd/ta/zw/3/bin_switch/1",
-					UiElement:           "binary_switch"},
+					UiElement:           "binary_switch",
+					Value:		     true},
 			},
 			},
 			model.View{Id:"",Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
@@ -35,19 +36,21 @@ func TestProjectStore_Upsert(t *testing.T) {
 					DisplayElementTopic: "jim1/evt/ta/zw/2/bin_switch/1",
 					ControlElementTopic: "jim1/cmd/ta/zw/2/bin_switch/1",
 					UiElement:           "binary_switch",
+					Value:		     true,
 				}, model.Thing{
 					Name:                "switch12",
 					Type:                "bianry.switch",
 					DisplayElementTopic: "/dev/zw/2/bin_switch/1/events",
 					ControlElementTopic: "/dev/zw/2/bin_switch/1/commands",
 					UiElement:           "binary_switch",
+					Value:		     true,
 				}, model.Thing{
 					Name:                "Temp",
 					Type:                "sensor.temperature",
 					DisplayElementTopic: "/dev/zw/99/sen_temp/1/events",
 					ControlElementTopic: "",
 					UiElement:           "sensor",
-					Value:               "12.3",
+					Value:               12.3,
 					Unit:                "C",
 				}, model.Thing{
 					Name:                "Temp Living",
@@ -55,7 +58,7 @@ func TestProjectStore_Upsert(t *testing.T) {
 					DisplayElementTopic: "/dev/zw/99/sen_temp/2/events",
 					ControlElementTopic: "",
 					UiElement:           "sensor",
-					Value:               "12.3",
+					Value:               12.3,
 					Unit:                "C",
 				},
 			},
@@ -64,7 +67,7 @@ func TestProjectStore_Upsert(t *testing.T) {
 	}
 	newId , err := prStore.Upsert(&project)
 	if err == nil{
-		prStore.Delete(newId)
+		//prStore.Delete(newId)
 		t.Log("New project was created and delted. Project id = ",newId)
 	}else{
 		t.Error(err)

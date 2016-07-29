@@ -30,6 +30,7 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
       project = {
         id: "",
         name: '',
+        type: 'mob_html',
         domain: '',
         comments: '',
         view:[]

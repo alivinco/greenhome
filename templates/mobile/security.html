@@ -4,8 +4,20 @@
       <a class="icon icon-gear pull-right"></a>
     </header>
     <div class="content">
-        <button class="btn btn-positive btn-block" onclick="CmdBinarySwitch('jim1/cmd/greenhome/security',true)">Arm</button>
-        <button class="btn btn-primary btn-block">Arm(stay)</button>
-        <button class="btn btn-negative btn-block">Disarm</button>
+        {{ range .project.Views }}
+         {{ if eq .UiGroup "security"}}
+                {{ range .Things}}
+                   {{ if eq .Name "AlarmMode"}}
+                        <button class="btn btn-positive btn-block" onclick="CmdModeAlarm('{{ .ControlElementTopic }}','arm')">Arm</button>
+                        <button class="btn btn-primary btn-block" onclick="CmdModeAlarm('{{ .ControlElementTopic }}','arm_stay')">Arm(stay)</button>
+                        <button class="btn btn-negative btn-block" onclick="CmdModeAlarm('{{ .ControlElementTopic }}','disarm')">Disarm</button>
+                   {{ end}}
+                   {{ if eq .Name "HomeState"}}
+                        <div class="content-padded"> <h3> Home state : <span topic="{{ .DisplayElementTopic }}" ui_element="{{ .UiElement }}"> {{ .Value }} </h3></span> </div>
+                   {{ end}}
+                {{ end}}
+            {{ end}}
+        {{end}}
+
     </div>
 {{ template "footer.html" .}}

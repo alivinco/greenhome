@@ -1,28 +1,53 @@
 {{ template "header.html" .}}
 <header class="bar bar-nav">
   <div class="segmented-control">
-    <a class="control-item active">One</a>
-    <a class="control-item">Two</a>
-    <a class="control-item">Three</a>
+    <a class="control-item active" href="#floor_1">One</a>
+    <a class="control-item" href="#floor_2">Two</a>
+    <a class="control-item" href="#floor_3">Three</a>
   </div>
 </header>
     <div class="content">
-        <ul class="table-view">
-          <li class="table-view-cell">
-            <a class="navigate-right">
-              Living room
-            </a>
-          </li>
-          <li class="table-view-cell">
-            <a class="navigate-right">
-              Hallway
-            </a>
-          </li>
-          <li class="table-view-cell">
-            <a class="navigate-right">
-              Kitchen
-            </a>
-          </li>
+      <span id="floor_1" class="control-content active">
+       <ul class="table-view ">
+          {{ range .project.Views }}
+            {{ if and (eq .UiGroup "rooms") (eq .Floor 1) }}
+                  <li class="table-view-cell">
+                    <a class="navigate-right control-item" href="/greenhome/ui/m/view/{{.Id.Hex}}">
+                      {{.Room}}
+                    </a>
+                  </li>
+                </li>
+            {{ end}}
+          {{end}}
         </ul>
+      </span>
+      <span id="floor_2" class="control-content">
+       <ul class="table-view ">
+          {{ range .project.Views }}
+            {{ if and (eq .UiGroup "rooms") (eq .Floor 2) }}
+                  <li class="table-view-cell">
+                    <a class="navigate-right control-item" href="/greenhome/ui/m/view/{{.Id.Hex}}">
+                      {{.Room}}
+                    </a>
+                  </li>
+                </li>
+            {{ end}}
+          {{end}}
+        </ul>
+      </span>
+      <span id="floor_3" class="control-content ">
+       <ul class="table-view ">
+          {{ range .project.Views }}
+            {{ if and (eq .UiGroup "rooms") (eq .Floor 3) }}
+                  <li class="table-view-cell">
+                    <a class="navigate-right control-item" href="/greenhome/ui/m/view/{{.Id.Hex}}">
+                      {{.Room}}
+                    </a>
+                  </li>
+                </li>
+            {{ end}}
+          {{end}}
+        </ul>
+      </span>
     </div>
 {{ template "footer.html" .}}
