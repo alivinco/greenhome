@@ -17,6 +17,14 @@ function CmdBinarySwitch(topic,value){
     ws.send(msg)
 }
 
+function CmdLevel(topic,type,value){
+    valueInt = parseInt(value)
+    cls = "level"
+    subcls = type.replace("level.","")
+    msg = NewMsg(topic,"cmd",cls,subcls,{value:valueInt})
+    ws.send(msg)
+}
+
 function CmdModeAlarm(topic,value){
     msg = NewMsg(topic,"cmd","mode","alarm",{value:value})
     ws.send(msg)
@@ -29,6 +37,7 @@ function pushHandler(event){
     if(url.includes("logs")){
         initChat()
     }
+    initSlider()
     console.dir(url)
 }
 
@@ -62,8 +71,25 @@ function wsMessageHandler(msg){
     //chat.innerText += line;
 }
 
+function initSlider(){
+   // With JQuery
+    $("input.el_slider").slider({});
+    $("input.el_slider").on("slideStop",function(slideEvt){
+        console.dir(slideEvt)
+        sliderId = slideEvt.target.id
+        dispId = sliderId.replace("slider_","disp_")
+        topic = $("#"+sliderId).attr("topic")
+        thingType = $("#"+sliderId).attr("thing-type")
+        CmdLevel(topic,thingType,slideEvt.value)
+        //console.log(thingType)
+        $("#"+dispId).text(slideEvt.value)
+    });
+}
+
 $(function() {
-     // Only needed if you want to fire a callback
+
+    // Only needed if you want to fire a callback
+     initSlider()
      window.addEventListener('push', pushHandler);
      console.dir("Connecting")
      var url = "ws://" + window.location.host + "/greenhome/ws?domain="+domain;

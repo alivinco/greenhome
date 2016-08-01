@@ -13,9 +13,8 @@ type EventLogConfig struct {
 type EventLogEntry struct {
 	Project bson.ObjectId `json:"project_id"`
 	Topic string  `json:"topic"`
-	StringValue string `json:"string_value"`
-	NumericValue float32 `json:"numeric_value"`
-	BoolValue bool `json:"bool_value"`
+	Value interface {}  `json:"value"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type UserActivityLogEntry struct {

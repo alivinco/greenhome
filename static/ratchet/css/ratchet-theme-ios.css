@@ -237,6 +237,7 @@ input[type="email"],
 input[type="url"],
 input[type="tel"],
 input[type="color"],
+input[type="range"],
 .input-group {
   height: 40px;
   padding: 10px 15px;

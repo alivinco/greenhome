@@ -58,7 +58,7 @@ func InitStores(){
 func InitAdaptersAndMainRouter(){
 	if wsGroup != nil{
 		wsa = adapters.NewWsAdapter(wsGroup)
-		mqa = adapters.NewMqttAdapter(configs.MqttBrokerUri,configs.MqttConnClientId)
+		mqa = adapters.NewMqttAdapter(configs.MqttBrokerUri,configs.MqttConnClientId,configs.MqttConnUsername,configs.MqttConnPassword)
 		//mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 		projectStore.SetTopicChangeHandler(mqa.TopicChangeHandler)
 		err := mqa.Start()

@@ -16,10 +16,12 @@ type MqttAdapter struct {
 type MessageHandler func (adapter string,topic string,iotMsg *iotmsglibgo.IotMsg , ctx *model.Context)
 
 //serverUri="tcp://localhost:1883"
-func NewMqttAdapter(serverUri string ,clientId string)(*MqttAdapter) {
+func NewMqttAdapter(serverUri string ,clientId string ,username string , password string)(*MqttAdapter) {
 	mh := MqttAdapter{}
 	opts := MQTT.NewClientOptions().AddBroker(serverUri)
 	opts.SetClientID(clientId)
+	opts.SetUsername(username)
+	opts.SetPassword(password)
 	opts.SetDefaultPublishHandler(mh.onMessage)
 	opts.SetCleanSession(true)
 

@@ -1,0 +1,41 @@
+.switch {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px #999;
+}
+
+.switch:hover {background-color: #3e8e41}
+
+.switch:active {
+  /*background-color: #3e8e41;*/
+  box-shadow: 0 0px #666;
+  transform: translateY(4px);
+}
+
+.switch-active {
+  /*background-color: #3e8e41;*/
+  box-shadow: 0 0px #666;
+  transform: translateY(4px);
+}
+
+.label-text {
+    display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
+}
+
+#ex1Slider .slider-selection {
+	background: #BABABA;
+}
+.slider {
+  background-color: transparent;
+}
