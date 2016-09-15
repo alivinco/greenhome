@@ -1,0 +1,34 @@
+{{ template "header.html" .}}
+    <header class="bar bar-nav ">
+      <h1 class="title">Settings</h1>
+      <a class="icon icon-gear pull-right"></a>
+    </header>
+    <div class="content">
+        <ul class="table-view">
+            <li class="table-view-cell">
+                <form method="post">
+                    <h5>Username:</h5>{{ $.auth.Username }}
+                    <h5>Email:</h5>{{ $.auth.Email }}
+                    <h5>Domain</h5>
+                    <select id = "domain" placeholder="domain" name ="domain" onchange="redirectOnChange('domain','/greenhome/ui/m/settings','domain')">
+                        <option value="" >Select domain</option>
+                        {{ range .domains }}
+                        <option value="{{ . }}" {{ if eq $.auth.SessionDomain . }} selected {{end}}  >{{ . }}</option>
+                        {{ end }}
+                    </select>
+                    <h5>Project:</h5>
+                    <select placeholder="project" name="project">
+                        {{ range .projects }}
+                        <option value="{{ .Id.Hex }}" {{ if eq $.auth.SessionProject .Id.Hex }} selected {{end}}  >{{ .Name }}</option>
+                        {{ end }}
+                    </select>
+
+                    <button type="submit" class="btn btn-positive btn-block">save</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+<script type="javascript">
+
+</script>
+{{ template "footer.html" .}}

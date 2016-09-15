@@ -24,10 +24,10 @@ func Auth(secret string) gin.HandlerFunc {
 			authRequest.IsAuthenticated = true
 			authRequest.Email,_ = token.Claims["email"].(string)
 			authRequest.Username,_ = token.Claims["nickname"].(string)
-			meta,_ := token.Claims["app_metadata"].(map[string]interface{})
-			authRequest.DomainName = meta["domain_name"].(string)
-			authRequest.DomainId = meta["domain_id"].(string)
-			fmt.Println("Domain name = ",authRequest.DomainName)
+			//meta,_ := token.Claims["app_metadata"].(map[string]interface{})
+			//authRequest.DomainName = meta["domain_name"].(string)
+			//authRequest.DomainId = meta["domain_id"].(string)
+			//fmt.Println("Domain name = ",authRequest.DomainName)
 		}
 		c.Set("AuthRequest",authRequest)
 	}

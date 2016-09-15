@@ -30,7 +30,7 @@ func NewWsAdapter(ginE *gin.RouterGroup )(*WsAdapter){
 		reqDomain := c.Query("domain")
 		authRequest ,exists := c.Get("AuthRequest")
 		if exists{
-			if authRequest.(model.AuthRequest).DomainId == reqDomain{
+			if authRequest.(model.AuthRequest).ValidateDomain(reqDomain){
 				m.HandleRequest(c.Writer, c.Request)
 				return
 			}

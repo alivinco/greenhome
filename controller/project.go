@@ -19,7 +19,7 @@ func (mst *ProjectRestController) GetProject(c *gin.Context){
 	result,err := mst.ProjectStore.GetById(projectId)
 	auth := utils.GetAuthRequest(c)
 	if err == nil {
-		if auth.DomainId == result.Domain || auth.IsAuthenticated {
+		if auth.ValidateDomain(result.Domain)|| auth.IsAuthenticated {
 			c.JSON(http.StatusOK, *result)
 		}else{
 			log.Warn("Unauthorized request")
@@ -35,7 +35,7 @@ func (mst *ProjectRestController) GetProject(c *gin.Context){
 func (mst *ProjectRestController) GetProjects(c *gin.Context){
 	auth := utils.GetAuthRequest(c)
 	if auth.IsAuthenticated {
-		filter := model.Project{Domain:auth.DomainId}
+		filter := model.Project{Domain:auth.SessionDomain}
 		result,err := mst.ProjectStore.Get(&filter)
 		if err == nil {
 			c.JSON(http.StatusOK, result)
@@ -55,7 +55,7 @@ func (mst *ProjectRestController) PostProject(c *gin.Context){
 	if auth.IsAuthenticated {
 		var project model.Project
 		if c.BindJSON(&project) == nil {
-			project.Domain = auth.DomainId
+			project.Domain = auth.SessionDomain
 			mst.ProjectStore.Upsert(&project)
 		}else {
 			log.Warn("Can't bind model")
@@ -69,10 +69,21 @@ func (mst *ProjectRestController) PostProject(c *gin.Context){
 
 }
 
+func(mst *ProjectRestController) GetDomains(c *gin.Context){
+	auth := utils.GetAuthRequest(c)
+	domains := make([]model.Domain,len(auth.Domains))
+	for i , domainId := range auth.Domains {
+		domains[i].Id = domainId
+	}
+	c.JSON(http.StatusOK, domains)
+}
+
+
+
 func (mst *ProjectRestController) DeleteProject(c *gin.Context){
 	projectId := c.Param("project_id")
 	auth := utils.GetAuthRequest(c)
-	if auth.IsAuthenticated && auth.DomainId == mst.ProjectStore.GetDomainByProjectId(projectId){
+	if auth.IsAuthenticated && auth.ValidateDomain(mst.ProjectStore.GetDomainByProjectId(projectId)){
 		mst.ProjectStore.Delete(projectId)
 	}else{
 		log.Warn("Unauthorized request")

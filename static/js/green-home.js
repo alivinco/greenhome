@@ -86,6 +86,14 @@ function initSlider(){
     });
 }
 
+function redirectOnChange(selectId,url,paramName){
+    value = $("#"+selectId).val()
+    console.log(value)
+    location.href = url+"?"+paramName+"="+value
+
+}
+
+
 $(function() {
 
     // Only needed if you want to fire a callback

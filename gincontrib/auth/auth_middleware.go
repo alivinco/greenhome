@@ -26,12 +26,8 @@ func AuthMiddleware(store *sessions.CookieStore ) gin.HandlerFunc {
 			authRequest.IsAuthenticated = false
 			authRequest.Error = err
 		}else{
-			if session.Values["domain_id"].(string) != ""{
-				authRequest.IsAuthenticated = true
-				authRequest.Username = session.Values["username"].(string)
-				authRequest.Email = session.Values["email"].(string)
-				authRequest.DomainId = session.Values["domain_id"].(string)
-
+			authRequest.DeserializeFromSession(session)
+			if authRequest.IsAuthenticated{
 				fmt.Println("Request is authenticated as ",session.Values)
 			}else{
 				fmt.Println("Request is not authenticated as ",session.Values)
@@ -41,6 +37,11 @@ func AuthMiddleware(store *sessions.CookieStore ) gin.HandlerFunc {
 		}
 		c.Set("AuthRequest",authRequest)
 	}
+}
+func  SerializeUserInfoToSession(session *sessions.Session,userInfo *Auth0UserInfo){
+	session.Values["Username"] = userInfo.Name
+	session.Values["Email"] = userInfo.Email
+	session.Values["Domains"] = userInfo.AppMetadata.Domains
 }
 
 func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *model.AppConfigs) {
@@ -96,12 +97,9 @@ func OAuth2CallbackHandler(store *sessions.CookieStore,c *gin.Context ,config *m
 			return
 		}
 		session , _ := store.Get(c.Request,"gh_user")
-		session.Values["username"] = userInfo.Name
-		session.Values["email"] = userInfo.Email
-		session.Values["domain_id"] = userInfo.DomainID
-		session.Values["project_id"] = "57573834554efc2c77b59f97"
-		if userInfo.DomainID == ""{
-			fmt.Println("Error getting User info from Auth0")
+		SerializeUserInfoToSession(session,&userInfo)
+		if len(userInfo.AppMetadata.Domains) == 0 {
+			fmt.Println("Domain list is empty.")
 			c.AbortWithError(http.StatusInternalServerError,err)
 		}
 		session.Save(c.Request,c.Writer)

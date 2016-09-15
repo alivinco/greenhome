@@ -17,8 +17,11 @@ import (
 	"github.com/alivinco/greenhome/controller"
 	"github.com/caarlos0/env"
 	"github.com/BurntSushi/toml"
+	//"github.com/spf13/viper"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/alivinco/greenhome/gincontrib/utils"
+	"errors"
 )
 var session *mgo.Session
 var db *mgo.Database
@@ -89,10 +92,16 @@ func UnsubscribeMqttTopics(){
 }
 
 func GetProject(c *gin.Context)(project *model.Project , domain string){
-			session , _ := sessionStore.Get(c.Request,"gh_user")
-			project , _ = projectStore.GetById(session.Values["project_id"].(string))
-			domain = session.Values["domain_id"].(string)
-			ctx := model.Context{domain}
+			auth := utils.GetAuthRequest(c)
+			if auth.SessionProject == "" && auth.SessionDomain == ""{
+				c.Redirect(http.StatusSeeOther,"/greenhome/ui/m/settings")
+				c.Abort()
+				return nil,""
+
+			}
+			project , _ = projectStore.GetById(auth.SessionProject)
+			domain = auth.SessionDomain
+			ctx := model.Context{Domain:auth.SessionDomain}
 			store.ExtendThingsWithValues(thingsCacheStore,project,&ctx)
 			return
 	}
@@ -111,15 +120,51 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 		})
 	r.GET("/greenhome/logout",func(c *gin.Context) {
 			auth.Logout(sessionStore ,c,configs)
-			c.Redirect(303, configs.AppRootUrl+"/greenhome/ui/m/home",)
+			c.Redirect(303, configs.AppRootUrl+"/greenhome/ui/m/home")
 		})
 	mobAppRoot := r.Group("/greenhome/ui/m")
-	//mobAppRoot.Use(auth.Auth(string(decoded_secret)))
 	mobAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	mobAppRoot.GET("/home",func(c *gin.Context) {
 			project , domain := GetProject(c)
-        		c.HTML(http.StatusOK, "start.html",gin.H{"project":project,"domain":domain})
+			if project != nil {
+				c.HTML(http.StatusOK, "start.html",gin.H{"project":project,"domain":domain})
+			}
+
 		})
+	mobAppRoot.GET("/settings",func(c *gin.Context) {
+		domain , exists := c.GetQuery("domain")
+		var projects []model.Project
+		var err error
+		auth := utils.GetAuthRequest(c)
+		if exists {
+			projects,err = projectStore.Get(&model.Project{Domain:domain})
+
+		} else if auth.SessionDomain != ""{
+			projects,err = projectStore.Get(&model.Project{Domain:auth.SessionDomain})
+		}
+		if err != nil {
+			log.Error(err)
+		}
+		c.HTML(http.StatusOK, "settings.html",gin.H{"domains":auth.Domains,"projects":projects,"auth":auth})
+	})
+	mobAppRoot.POST("/settings",func(c *gin.Context) {
+		auth := utils.GetAuthRequest(c)
+		domain := c.PostForm("domain")
+		project:= c.PostForm("project")
+		session , err := sessionStore.Get(c.Request,"gh_user")
+		if err == nil {
+			auth.SessionDomain = domain
+			auth.SessionProject = project
+			auth.SerializeToSession(session)
+			session.Save(c.Request,c.Writer)
+			c.Redirect(303, configs.AppRootUrl+"/greenhome/ui/m/home")
+
+		}else {
+			log.Error(err)
+			c.AbortWithError(http.StatusInternalServerError,errors.New(fmt.Sprintf("%v",err)))
+		}
+
+	})
 	mobAppRoot.GET("/view/:view_id",func(c *gin.Context) {
 			project , domain := GetProject(c)
 			viewId , _ := c.Params.Get("view_id")
@@ -149,6 +194,7 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 		})
 	// ADMIN UI
 	adminAppRoot := r.Group("/greenhome/ui/adm")
+	adminAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	adminAppRoot.GET("/index",func(c *gin.Context){
 		c.HTML(http.StatusOK, "index.html",gin.H{})
 	})
@@ -160,6 +206,26 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	apiAppRoot.DELETE("/project/:project_id",projectController.DeleteProject)
 	apiAppRoot.GET("/projects",projectController.GetProjects)
 	apiAppRoot.POST("/project",projectController.PostProject)
+	apiAppRoot.GET("/domains",projectController.GetDomains)
+	apiAppRoot.POST("/session",func(c *gin.Context){
+		auth := utils.GetAuthRequest(c)
+		session , err := sessionStore.Get(c.Request,"gh_user")
+		domain := c.PostForm("domain")
+		//project:= c.PostForm("project")
+		if err == nil {
+			auth.SessionDomain = domain
+			//auth.SessionProject = project
+			auth.SerializeToSession(session)
+			session.Save(c.Request,c.Writer)
+			c.JSON(http.StatusOK, gin.H{"status":"ok"})
+
+		}else {
+			log.Error(err)
+			c.AbortWithError(http.StatusInternalServerError,errors.New(fmt.Sprintf("%v",err)))
+		}
+	})
+
+
 	// WS Endpoint
 	wsGroup = r.Group("/greenhome/ws")
 	wsGroup.Use(auth.AuthMiddleware(sessionStore))

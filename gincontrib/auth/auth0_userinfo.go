@@ -21,11 +21,6 @@ type Auth0UserInfo struct {
 	LastPasswordReset time.Time `json:"last_password_reset"`
 	AppMetadata struct {
 		BhubRole string `json:"bhub_role"`
-		DomainID string `json:"domain_id"`
-		DomainName string `json:"domain_name"`
+		Domains []string `json:"domains"`
 	} `json:"app_metadata"`
-	BhubRole string `json:"bhub_role"`
-	DomainID string `json:"domain_id"`
-	DomainName string `json:"domain_name"`
-	Sub string `json:"sub"`
 }

@@ -21,7 +21,7 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
 
     $scope.things = [];
     $scope.views = [];
-
+    $scope.domains = [];
     $scope.groups = [];
     $scope.project = null;
     $scope.view = null;
@@ -113,6 +113,34 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
             // or server returns response with an error status.
         });
     }
+
+    $scope.loadDomains = function(){
+            $http.get('/greenhome/api/domains').
+            then(function (response) {
+                $scope.domains = response.data
+            }, function (response) {
+                // called asynchronously if an error occurs
+                // or server returns response with an error status.
+            });
+        }
+
+    $scope.setDomain = function(domain){
+          if ($scope.domains){
+            $http.post("/greenhome/api/session",{domain:domain.Id}).
+            then(function (response) {
+                $scope.loadProjects()
+//                alert("Project saved")
+
+              }, function (response) {
+
+                  // called asynchronously if an error occurs
+                  // or server returns response with an error status.
+              });
+          }else{
+            alert("Nothing to save , please select project first.")
+          }
+        }
+
     $scope.saveProject = function(){
       if ($scope.project){
         $http.post("/greenhome/api/project",JSON.stringify($scope.project)).
@@ -144,6 +172,6 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
       console.dir($scope.project)
     }
     $scope.loadProjects()
-
+    $scope.loadDomains()
 
 }]);
