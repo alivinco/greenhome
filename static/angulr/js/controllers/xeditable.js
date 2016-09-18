@@ -22,16 +22,18 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
     $scope.things = [];
     $scope.views = [];
     $scope.domains = [];
+    $scope.projects = [];
     $scope.groups = [];
     $scope.project = null;
     $scope.view = null;
+    $scope.domain = null;
 
     $scope.addProject = function() {
       project = {
         id: "",
         name: '',
         type: 'mob_html',
-        domain: '',
+        domain: $scope.domain.Id,
         comments: '',
         view:[]
       };
@@ -125,8 +127,9 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
         }
 
     $scope.setDomain = function(domain){
+          $scope.domain = domain
           if ($scope.domains){
-            $http.post("/greenhome/api/session",{domain:domain.Id}).
+            $http.post("/greenhome/api/session",{SessionDomain:domain.Id}).
             then(function (response) {
                 $scope.loadProjects()
 //                alert("Project saved")

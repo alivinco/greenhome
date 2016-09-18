@@ -4,6 +4,7 @@
 var chat
 var text
 var ws
+var wsIsConnected = false
 var name = "Guest" + Math.floor(Math.random() * 1000);
 
 function NewMsg(topic,type,cls,subcls,def,properties){
@@ -33,12 +34,13 @@ function CmdModeAlarm(topic,value){
 // ratchet.js push handler which is called whenever new page is loaded by push.js
 function pushHandler(event){
     url = event.detail.state.url
-
+    updateConnectionStatusElement()
     if(url.includes("logs")){
         initChat()
     }
     initSlider()
     console.dir(url)
+
 }
 
 var now = function () {
@@ -71,6 +73,32 @@ function wsMessageHandler(msg){
     //chat.innerText += line;
 }
 
+function wsOnCloseHandler(evt){
+     console.log("Ws disconnected .")
+     wsIsConnected = false
+     updateConnectionStatusElement()
+
+}
+function wsOnOpenHandler(evt){
+     console.log("Ws connected .")
+     wsIsConnected = true
+     updateConnectionStatusElement()
+
+}
+
+function updateConnectionStatusElement()
+{
+     if (wsIsConnected) {
+            $("#wsStatus").toggleClass("icon-check",true)
+            $("#wsStatus").toggleClass("icon-close",false)
+            $("#wsStatus").css("color","green")
+     }else {
+             $("#wsStatus").toggleClass("icon-check",false)
+             $("#wsStatus").toggleClass("icon-close",true)
+             $("#wsStatus").css("color","red")
+     }
+}
+
 function initSlider(){
    // With JQuery
     $("input.el_slider").slider({});
@@ -99,10 +127,17 @@ $(function() {
     // Only needed if you want to fire a callback
      initSlider()
      window.addEventListener('push', pushHandler);
-     console.dir("Connecting")
-     var url = "ws://" + window.location.host + "/greenhome/ws?domain="+domain;
-     ws = new WebSocket(url);
+     protocol = "wss"
+     if (location.protocol == "http:"){
+        protocol = "ws"
+     }
+     console.dir("Connecting over "+protocol)
+     var url = protocol+"://" + window.location.host + "/greenhome/ws?domain="+domain;
+     ws = new ReconnectingWebSocket(url);
      ws.onmessage = wsMessageHandler
+     ws.onopen =  wsOnOpenHandler
+     ws.onclose =  wsOnCloseHandler
+
      if (window.location.href.includes("logs"))
      {
         initChat()

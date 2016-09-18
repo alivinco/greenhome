@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Ratchet template page</title>
+    <title>GreenHome mobile</title>
 
     <!-- Sets initial viewport load and disables zooming  -->
     <meta name="viewport" content="initial-scale=1, maximum-scale=1">
@@ -19,6 +19,7 @@
     <!-- Include the compiled Ratchet JS -->
     <script src="/greenhome/static/ratchet/js/ratchet.min.js"></script>
     <script src="/greenhome/static/js/jquery-2.2.4.min.js"></script>
+    <script src="/greenhome/static/js/reconnecting-websocket.min.js"></script>
     <script src="/greenhome/static/js/green-home.js"></script>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.1.1/css/bootstrap-slider.css" rel="stylesheet">
@@ -56,4 +57,9 @@
         <span class="icon icon-gear"></span>
         <span class="tab-label">Log</span>
       </a>
+      <a class="tab-item" >
+        <span id = "wsStatus" style="color:red" class="icon icon-close"></span>
+      </a>
+
+
     </nav>

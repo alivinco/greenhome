@@ -86,7 +86,7 @@ func (ps *ProjectStore) Delete(ID string) error{
 
 // GetList returns list of all apps
 func (ms *ProjectStore) Get(filter *model.Project) ([]model.Project,error){
-	var results []model.Project
+	results := []model.Project{}
 	selector := bson.M{}
 	if len(filter.Id)>0 {
 		selector = bson.M{"_id":filter.Id}
@@ -99,6 +99,9 @@ func (ms *ProjectStore) Get(filter *model.Project) ([]model.Project,error){
 }
 // GetList returns list of all apps
 func (ms *ProjectStore) GetById(id string) (*model.Project,error){
+	if id == "" {
+		return nil , errors.New("Id can't be empty.")
+	}
 	result := model.Project{}
 	err := ms.projectC.FindId(bson.ObjectIdHex(id)).One(&result)
 	fmt.Println("Results All: ", result)

@@ -22,6 +22,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/alivinco/greenhome/gincontrib/utils"
 	"errors"
+	"os"
 )
 var session *mgo.Session
 var db *mgo.Database
@@ -61,7 +62,7 @@ func InitStores(){
 func InitAdaptersAndMainRouter(){
 	if wsGroup != nil{
 		wsa = adapters.NewWsAdapter(wsGroup)
-		mqa = adapters.NewMqttAdapter(configs.MqttBrokerUri,configs.MqttConnClientId,configs.MqttConnUsername,configs.MqttConnPassword)
+		mqa = adapters.NewMqttAdapter("tcp://"+configs.MqttBrokerUri,configs.MqttConnClientId,configs.MqttConnUsername,configs.MqttConnPassword)
 		//mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 		projectStore.SetTopicChangeHandler(mqa.TopicChangeHandler)
 		err := mqa.Start()
@@ -99,10 +100,13 @@ func GetProject(c *gin.Context)(project *model.Project , domain string){
 				return nil,""
 
 			}
-			project , _ = projectStore.GetById(auth.SessionProject)
-			domain = auth.SessionDomain
-			ctx := model.Context{Domain:auth.SessionDomain}
-			store.ExtendThingsWithValues(thingsCacheStore,project,&ctx)
+			var err error
+			project , err = projectStore.GetById(auth.SessionProject)
+			if err == nil {
+				domain = auth.SessionDomain
+				ctx := model.Context{Domain:auth.SessionDomain}
+				store.ExtendThingsWithValues(thingsCacheStore,project,&ctx)
+			}
 			return
 	}
 
@@ -128,8 +132,9 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 			project , domain := GetProject(c)
 			if project != nil {
 				c.HTML(http.StatusOK, "start.html",gin.H{"project":project,"domain":domain})
+			}else {
+				c.Redirect(303, configs.AppRootUrl+"/greenhome/ui/m/settings")
 			}
-
 		})
 	mobAppRoot.GET("/settings",func(c *gin.Context) {
 		domain , exists := c.GetQuery("domain")
@@ -138,6 +143,7 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 		auth := utils.GetAuthRequest(c)
 		if exists {
 			projects,err = projectStore.Get(&model.Project{Domain:domain})
+			auth.SessionDomain = domain
 
 		} else if auth.SessionDomain != ""{
 			projects,err = projectStore.Get(&model.Project{Domain:auth.SessionDomain})
@@ -208,21 +214,27 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	apiAppRoot.POST("/project",projectController.PostProject)
 	apiAppRoot.GET("/domains",projectController.GetDomains)
 	apiAppRoot.POST("/session",func(c *gin.Context){
-		auth := utils.GetAuthRequest(c)
-		session , err := sessionStore.Get(c.Request,"gh_user")
-		domain := c.PostForm("domain")
-		//project:= c.PostForm("project")
+		authReq := model.AuthRequest{}
+		err := c.BindJSON(&authReq)
 		if err == nil {
-			auth.SessionDomain = domain
-			//auth.SessionProject = project
-			auth.SerializeToSession(session)
-			session.Save(c.Request,c.Writer)
-			c.JSON(http.StatusOK, gin.H{"status":"ok"})
+			auth := utils.GetAuthRequest(c)
+			session , err := sessionStore.Get(c.Request,"gh_user")
+			if err == nil {
+				log.Debug("New session domain = ",authReq.SessionDomain)
+				auth.SessionDomain = authReq.SessionDomain
+				auth.SerializeToSession(session)
+				session.Save(c.Request,c.Writer)
+				c.JSON(http.StatusOK, gin.H{"status":"ok"})
 
+			}else {
+				log.Error(err)
+				c.AbortWithError(http.StatusInternalServerError,errors.New(fmt.Sprintf("%v",err)))
+			}
 		}else {
 			log.Error(err)
 			c.AbortWithError(http.StatusInternalServerError,errors.New(fmt.Sprintf("%v",err)))
 		}
+
 	})
 
 
@@ -235,14 +247,20 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 func LoadConfigs(){
 	configs = &model.AppConfigs{}
     	var configFile string
+	var configLoaded bool
 	flag.StringVar(&configFile,"c","","Config file")
 	flag.Parse()
 	if configFile != "" {
-		fmt.Println("Loading configs from file ",configFile)
-		if _, err := toml.DecodeFile(configFile,configs);err != nil {
-			panic(err)
+		if _, err := os.Stat(configFile); err == nil {
+			fmt.Println("Loading configs from file ",configFile)
+			if _, err := toml.DecodeFile(configFile,configs);err != nil {
+				panic(err)
+			}
+			configLoaded = true
 		}
-	} else {
+	}
+
+	if !configLoaded {
 		fmt.Println("Loading configs from ENV .")
 		if err := env.Parse(configs);err != nil {
 			panic(err)
