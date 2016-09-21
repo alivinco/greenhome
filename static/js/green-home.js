@@ -125,6 +125,8 @@ function redirectOnChange(selectId,url,paramName){
 $(function() {
 
     // Only needed if you want to fire a callback
+    // test
+     FastClick.attach(document.body);
      initSlider()
      window.addEventListener('push', pushHandler);
      protocol = "wss"

@@ -190,7 +190,7 @@
       </td>
       <td class="v-middle">
         <!-- editable username (text with validation) -->
-        <span editable-text="thing.ui_element" e-name="ui_element" e-form="rowform"  e-required>
+        <span editable-select="thing.ui_element" e-name="ui_element" e-form="rowform"  e-required e-ng-options="s for s in ui_elements">
           {{ thing.ui_element }}
         </span>
       </td>

@@ -4,8 +4,8 @@
     {{ template "el_binary_switch.html" .}}
 {{ else if eq .UiElement "sensor" }}
     {{ template "el_sensor.html" .}}
-{{ else if eq .UiElement "slider" }}
-    {{ template "el_slider.html" .}}
+{{ else if eq .UiElement "level_slider" }}
+    {{ template "el_level_slider.html" .}}
 {{ else if eq .UiElement "short_text" }}
     {{ template "el_short_text.html" .}}
 {{ end}}

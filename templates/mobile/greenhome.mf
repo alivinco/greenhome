@@ -1,0 +1,20 @@
+CACHE MANIFEST
+# cache version 2.1
+
+CACHE:
+/greenhome/static/ratchet/css/ratchet.min.css
+/greenhome/static/js/fastclick.js
+/greenhome/static/ratchet/js/ratchet.min.js
+/greenhome/static/js/jquery-2.2.4.min.js
+/greenhome/static/js/reconnecting-websocket.min.js
+/greenhome/static/js/green-home.js
+/greenhome/static/libs/bootstrap-slider/bootstrap-slider.css
+/greenhome/static/libs/bootstrap-slider/bootstrap-slider.js
+/greenhome/static/css/greenhome.css
+/greenhome/static/ratchet/css/ratchet-theme-ios.css
+/greenhome/static/ratchet/fonts/ratchicons.woff
+/greenhome/static/ratchet/fonts/ratchicons.ttf
+
+NETWORK:
+*
+

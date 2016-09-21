@@ -135,6 +135,13 @@ func TestGetUpdatedTopics(t *testing.T) {
 					DisplayElementTopic: "jim1/evt/ta/zw/3/bin_switch/1",
 					ControlElementTopic: "jim1/cmd/ta/zw/3/bin_switch/1",
 					UiElement:           "binary_switch"},
+				model.Thing{
+					Id:		     "6",
+					Name:                "switch6",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "jim1/evt/ta/zw/6/bin_switch/1",
+					ControlElementTopic: "jim1/cmd/ta/zw/6/bin_switch/1",
+					UiElement:           "binary_switch"},
 			},
 			},
 			model.View{Id:bson.ObjectIdHex("577b733c6dcdd1118801aca4"),Name: "Home", Room: "Living", Floor: 1, Things: []model.Thing{
@@ -187,6 +194,13 @@ func TestGetUpdatedTopics(t *testing.T) {
 					Type:                "bianry.switch",
 					DisplayElementTopic: "/dev/zw/2/bin_switch/1/events",
 					ControlElementTopic: "/dev/zw/2/bin_switch/1/commands",
+					UiElement:           "binary_switch",
+				}, model.Thing{
+					Id:		     "",
+					Name:                "switch13",
+					Type:                "bianry.switch",
+					DisplayElementTopic: "/dev/zw/5/bin_switch/1/events",
+					ControlElementTopic: "/dev/zw/5/bin_switch/1/commands",
 					UiElement:           "binary_switch",
 				},
 			},

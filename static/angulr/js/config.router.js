@@ -107,11 +107,11 @@ angular.module('app')
                   templateUrl: '/greenhome/static/angulr/tpl/ui_googlemap.html',
                   resolve: load(['/greenhome/static/angulr/js/app/map/load-google-maps.js', '/greenhome/static/angulr/js/app/map/ui-map.js', '/greenhome/static/angulr/js/app/map/map.js'], function(){ return loadGoogleMaps(); })
               })
-              .state('app.ui.vieweditor', {
-                  url: '/vieweditor',
-                  templateUrl: '/greenhome/static/angulr/tpl/greenhome/view_editor.html',
-                  controller: 'XeditableCtrl',
-                  resolve: load(['xeditable','/greenhome/static/angulr/js/controllers/xeditable.js'])
+              .state('app.ui.projectmanager', {
+                  url: '/projectmanager',
+                  templateUrl: '/greenhome/static/angulr/tpl/greenhome/project_manager.html',
+                  controller: 'ProjectManagerCtrl',
+                  resolve: load(['xeditable','/greenhome/static/angulr/js/controllers/project_manager.js'])
               })
               .state('app.chart', {
                   url: '/chart',

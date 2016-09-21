@@ -1,4 +1,4 @@
-app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions', 'editableThemes', 
+app.controller('ProjectManagerCtrl', ['$scope', '$filter', '$http', 'editableOptions', 'editableThemes',
   function($scope, $filter, $http, editableOptions, editableThemes){
     editableThemes.bs3.inputClass = 'input-sm';
     editableThemes.bs3.buttonsClass = 'btn-sm';
@@ -27,6 +27,8 @@ app.controller('XeditableCtrl', ['$scope', '$filter', '$http', 'editableOptions'
     $scope.project = null;
     $scope.view = null;
     $scope.domain = null;
+    $scope.ui_elements = ["binary_switch","moment_button","sensor","short_text","level_slider"]
+    $scope.username = userName;
 
     $scope.addProject = function() {
       project = {

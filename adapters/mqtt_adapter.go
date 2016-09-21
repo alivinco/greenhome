@@ -23,8 +23,10 @@ func NewMqttAdapter(serverUri string ,clientId string ,username string , passwor
 	opts.SetUsername(username)
 	opts.SetPassword(password)
 	opts.SetDefaultPublishHandler(mh.onMessage)
-	opts.SetCleanSession(true)
-
+	opts.SetCleanSession(false)
+	opts.SetAutoReconnect(true)
+	opts.SetConnectionLostHandler(mh.onConnectionLost)
+	opts.SetOnConnectHandler(mh.onConnect)
 	//create and start a client using the above ClientOptions
 	mh.client = MQTT.NewClient(opts)
 	return &mh
@@ -81,6 +83,13 @@ func (mh *MqttAdapter)TopicChangeHandler(topics []string,isSub bool,ctx *model.C
 	}
 }
 
+func (mh *MqttAdapter) onConnectionLost(client MQTT.Client,err error){
+	log.Errorf("Connection lost with MQTT broker . Error : %v",err)
+}
+
+func (mh *MqttAdapter) onConnect(client MQTT.Client){
+	log.Infof("Connection established with MQTT broker .")
+}
 
 //define a function for the default message handler
 func (mh *MqttAdapter) onMessage(client MQTT.Client, msg MQTT.Message) {

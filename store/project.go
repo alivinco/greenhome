@@ -37,7 +37,11 @@ func (ps *ProjectStore) Upsert(project *model.Project) (string,error){
 	if len(project.Id)>0 {
 		selector = bson.M{"_id":project.Id}
 		err := ps.projectC.FindId(project.Id).One(&oldProject)
-		log.Error(err)
+		if err != nil {
+			log.Error(err)
+			return "",err
+		}
+
 	}else{
 		selector = bson.M{"_id":bson.NewObjectId()}
 		oldProject = nil
@@ -162,24 +166,56 @@ func (ms *ProjectStore) GetSubscriptions(projectId string , global bool)([]strin
 
 // Return array of modified topics .
 func GetUpdatedTopics(newProject *model.Project , oldProject *model.Project)(subTopics,unsubTopics []string){
+	var isNewTopic bool
 	for _,viewN := range newProject.Views {
 		for _, thingN := range viewN.Things {
 			if oldProject != nil {
+				isNewTopic = true
 				for _,viewO := range oldProject.Views {
 					if viewN.Id == viewO.Id{
 						for _, thingO := range viewO.Things {
-							if thingN.Id == thingO.Id && thingN.DisplayElementTopic != thingO.DisplayElementTopic {
-								subTopics = append(subTopics,thingN.DisplayElementTopic)
-								unsubTopics = append(unsubTopics,thingO.DisplayElementTopic)
+							//if thingN.Id == thingO.Id && thingN.DisplayElementTopic != thingO.DisplayElementTopic {
+							//	subTopics = append(subTopics,thingN.DisplayElementTopic)
+							//	unsubTopics = append(unsubTopics,thingO.DisplayElementTopic)
+							//}
+							//if thingN.Id == thingO.Id{
+							//	isNewTopic = false
+							//}
+							if thingN.DisplayElementTopic == thingO.DisplayElementTopic {
+								isNewTopic = false
 							}
 						}
 					}
+				}
+				if isNewTopic {
+					subTopics = append(subTopics,thingN.DisplayElementTopic)
 				}
 			}else {
 				subTopics = append(subTopics,thingN.DisplayElementTopic)
 			}
 		}
 	}
+	var topicToBeRemoved bool
+	if oldProject != nil {
+		for _,viewO := range oldProject .Views {
+			for _, thingO := range viewO.Things {
+				topicToBeRemoved = true
+				for _,viewN := range newProject.Views {
+					if viewN.Id == viewO.Id{
+						for _, thingN := range viewN.Things {
+							if thingN.DisplayElementTopic == thingO.DisplayElementTopic {
+								topicToBeRemoved = false
+							}
+						}
+					}
+				}
+				if topicToBeRemoved {
+					unsubTopics = append(unsubTopics,thingO.DisplayElementTopic)
+				}
+			}
+		}
+	}
+
 	return
 }
 
@@ -197,10 +233,10 @@ func ExtendThingsWithValues(cache *ThingsCacheStore , project *model.Project , c
 
 				if value != nil {
 					project.Views[view_i].Things[thing_i].Value = value.Default.Value
-					log.Debug("Value from cache=",thing.Value)
+					//log.Debug("Value from cache=",thing.Value)
 
 				}else{
-					log.Debug("No entry in cache")
+					//log.Debug("No entry in cache")
 				}
 
 			}

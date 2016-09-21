@@ -14,6 +14,7 @@ type Thing struct {
 	MinValue float32  `json:"min_value"`
 	Value interface{}  `json:"value"`
 	Unit string  `json:"unit"`
+	Role string `json:"role"` // Role the thing , for instance binary.switch may have role "lamp"
 	UpdatedAt time.Time `json:"updated_at"`
 	PropFieldForUi string `json:"prop_field_ui"`
 

@@ -63,7 +63,6 @@ func InitAdaptersAndMainRouter(){
 	if wsGroup != nil{
 		wsa = adapters.NewWsAdapter(wsGroup)
 		mqa = adapters.NewMqttAdapter("tcp://"+configs.MqttBrokerUri,configs.MqttConnClientId,configs.MqttConnUsername,configs.MqttConnPassword)
-		//mqa = adapters.NewMqttAdapter("tcp://localhost:1883","greenhome_test")
 		projectStore.SetTopicChangeHandler(mqa.TopicChangeHandler)
 		err := mqa.Start()
 		if err !=nil {
@@ -128,6 +127,12 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 		})
 	mobAppRoot := r.Group("/greenhome/ui/m")
 	mobAppRoot.Use(auth.AuthMiddleware(sessionStore))
+	// serving manifest file
+	mobAppRoot.GET("/greenhome/ui/m/greenhome.appcache",func(c *gin.Context) {
+		c.Header("Content-Type","text/cache-manifest")
+		c.HTML(http.StatusOK, "greenhome.mf",gin.H{})
+	})
+
 	mobAppRoot.GET("/home",func(c *gin.Context) {
 			project , domain := GetProject(c)
 			if project != nil {
@@ -191,7 +196,7 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 			c.Get("UserData")
 			//user,_:=c.Get("UserData")
 			project , domain := GetProject(c)
-        		c.HTML(http.StatusOK, "rooms.html",gin.H{"project":project,"domain":domain})
+        		c.HTML(http.StatusOK, "rooms.html",gin.H{"project":project,"domain":domain })
 		})
 	mobAppRoot.GET("/logs",func(c *gin.Context) {
 			c.Get("UserData")
@@ -202,7 +207,8 @@ func InitHttpServer(bindAddress string,jwtSecret string)(*gin.Engine) {
 	adminAppRoot := r.Group("/greenhome/ui/adm")
 	adminAppRoot.Use(auth.AuthMiddleware(sessionStore))
 	adminAppRoot.GET("/index",func(c *gin.Context){
-		c.HTML(http.StatusOK, "index.html",gin.H{})
+		auth := utils.GetAuthRequest(c)
+		c.HTML(http.StatusOK, "index.html",gin.H{"auth":auth})
 	})
 	// REST API
 	projectController := controller.ProjectRestController{projectStore}
