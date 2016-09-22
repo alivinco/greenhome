@@ -1,11 +1,18 @@
 GOPATH=$(shell pwd)/../../../../
 export GOPATH
+export PATH=$PATH:$GOPATH/bin
 
 .PHONY : clean
 
 clean :
 	rm -Rf $(GOPATH)bin/*
 	rm -Rf bin
+
+install-glide :
+    curl https://glide.sh/get | sh
+
+init-project :
+    glide init
 
 build :
 	go install
